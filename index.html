@@ -1,5 +1,11 @@
 <!doctype html><html><head><meta charset=utf8><title>Hamro Kura</title><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Hamro Kura">
+<meta name="theme-color" content="#1F5FBF">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -299,6 +305,52 @@ body::before {
 .play { flex: 0 0 auto; width: 46px; height: 46px; border-radius: 50%; border: 0; cursor: pointer; background: var(--accent); color: var(--accent-ink); display: inline-flex; align-items: center; justify-content: center; padding: 0; }
 .play svg { width: 22px; height: 22px; }
 .card.now { outline: 2px solid var(--accent); }
+
+/* WhatsApp-style chat */
+:root { --b-own: #D9FDD3; --b-own-ink: #111B21; --b-other: #FFFFFF; --b-other-ink: #111B21; --b-meta: #667781; --b-tick: #53BDEB; --wall: #EFEAE2; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --b-own: #144D37; --b-own-ink: #E9EDEF; --b-other: #202124; --b-other-ink: #E9EDEF; --b-meta: #9BA6AD; --wall: #0B0B0B; } }
+:root[data-theme="dark"] { --b-own: #144D37; --b-own-ink: #E9EDEF; --b-other: #202124; --b-other-ink: #E9EDEF; --b-meta: #9BA6AD; --wall: #0B0B0B; }
+.chat { gap: 4px; padding: 12px 10px; border-radius: 20px; background-color: var(--wall); background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='140'%20height='140'%20viewBox='0%200%20140%20140'%20fill='none'%20stroke='%23808080'%20stroke-opacity='.17'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M24%2030c-6-8%204-16%2010-8%206-8%2016%200%2010%208l-10%2012z'/%3E%3Cpath%20d='M96%2022l4%209%2010%201-8%207%203%2010-9-6-9%206%203-10-8-7%2010-1z'/%3E%3Crect%20x='84'%20y='84'%20width='30'%20height='22'%20rx='6'/%3E%3Cpath%20d='M92%20106l-2%208%2010-8'/%3E%3Ccircle%20cx='36'%20cy='96'%20r='9'/%3E%3Cpath%20d='M27%2096h-6M51%2096h6M36%2087v-6'/%3E%3Cpath%20d='M64%2060v18M64%2060l12-3v18'/%3E%3Ccircle%20cx='60'%20cy='80'%20r='4'/%3E%3Ccircle%20cx='72'%20cy='77'%20r='4'/%3E%3C/svg%3E"); background-size: 140px; }
+.msg { max-width: 85%; }
+.bubble { padding: 6px 9px 4px; gap: 4px; border: 0; border-radius: 12px; box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2); -webkit-backdrop-filter: none; backdrop-filter: none; }
+.a .bubble { background: var(--b-other); color: var(--b-other-ink); border: 0; border-radius: 4px 12px 12px 12px; }
+.j .bubble { background: var(--b-own); color: var(--b-own-ink); border-radius: 12px 4px 12px 12px; }
+.bt { align-self: flex-end; display: inline-flex; align-items: center; gap: 4px; font-size: 0.68rem; color: var(--b-meta); margin-top: -2px; }
+.bt .tk { font-size: 0.85rem; letter-spacing: -3px; margin-right: 3px; }
+.bt .tk.seen { color: var(--b-tick); }
+.acts { display: none; padding-inline: 4px; }
+.acts.show { display: flex; }
+.chat .day { text-transform: none; letter-spacing: 0; font-size: 0.78rem; font-weight: 500; color: var(--b-meta); background: var(--b-other); border: 0; box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2); margin: 10px 0 4px; padding: 4px 12px; }
+/* Message box: text on top, icons below */
+.bar2 { flex-direction: column; align-items: stretch; gap: 2px; }
+.composer .pill { border: 0; background: transparent; border-radius: 0; padding: 0 10px; }
+.tools { display: flex; align-items: center; gap: 2px; }
+.tools .sp { flex: 1 1 auto; }
+
+/* Calls */
+.chathead { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 8px 8px 16px; border-radius: 20px; background: var(--glass); border: 1px solid var(--glass-line); margin-bottom: 8px; }
+.chathead b { display: block; font-size: 1.05rem; }
+.chathead span { font-size: 0.8rem; color: var(--muted); }
+.chbtn { display: flex; gap: 6px; }
+.chbtn button { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--glass-line); background: transparent; color: var(--fg); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+.chbtn svg { width: 24px; height: 24px; }
+.callmsg { display: flex; align-items: center; gap: 10px; min-width: 210px; padding: 8px 12px 8px 8px; border: 0; border-radius: 10px; background: rgba(0, 0, 0, 0.16); color: inherit; font: inherit; text-align: left; cursor: default; }
+.callmsg.miss { cursor: pointer; }
+.callmsg b { display: block; }
+.callmsg small { opacity: 0.75; }
+.callmsg .ci { width: 40px; height: 40px; border-radius: 50%; background: rgba(0, 0, 0, 0.3); display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+.callmsg.miss .ci { color: #FF6B6B; }
+#callUi { position: fixed; inset: 0; z-index: 60; background: #0B141A; color: #fff; display: flex; flex-direction: column; align-items: center; padding: env(safe-area-inset-top, 0px) 0 calc(24px + env(safe-area-inset-bottom, 0px)); }
+#remoteV { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #000; display: none; }
+#callUi.video #remoteV { display: block; }
+#localV { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 12px); right: 12px; width: 96px; height: 140px; object-fit: cover; border-radius: 14px; background: #222; display: none; z-index: 2; transform: scaleX(-1); }
+#callUi.video.mode-live #localV, #callUi.video.mode-calling #localV { display: block; }
+.cinfo { position: relative; z-index: 2; text-align: center; margin-top: 16vh; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7); }
+.cinfo b { display: block; font-family: var(--font-display); font-size: 2rem; font-weight: 400; }
+.cbtns { position: relative; z-index: 2; margin-top: auto; display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+.cbtns button { min-width: 78px; height: 78px; padding: 0 12px; border-radius: 39px; border: 0; color: #fff; background: rgba(255, 255, 255, 0.2); font-size: 0.95rem; cursor: pointer; }
+.cbtns .end { background: #E5484D; }
+.cbtns .acc { background: #2BB673; }
 .picked:empty { display: none; }
 .picked { padding-inline: 8px; }
 
@@ -357,7 +409,7 @@ body::before {
     </label>
     <button class="btn" type="submit" id="gBtn">Login</button>
     <p class="status" id="gStatus" role="status"></p>
-    <p style="text-align:center;font-size:0.75rem;opacity:0.6;margin-top:6px">v6</p>
+    <p style="text-align:center;font-size:0.75rem;opacity:0.6;margin-top:6px">v9</p>
   </form>
 </div>
 
@@ -370,6 +422,18 @@ body::before {
       <button class="btn quiet" type="button" id="pinCancel">Cancel</button>
       <button class="btn" type="button" id="pinOk">Delete</button>
     </div>
+  </div>
+</div>
+
+<div id="callUi" hidden role="dialog" aria-modal="true" aria-label="Call">
+  <video id="remoteV" autoplay playsinline></video>
+  <video id="localV" autoplay playsinline muted></video>
+  <div class="cinfo"><b id="callName"></b><span id="callState"></span></div>
+  <div class="cbtns">
+    <button type="button" id="cMute">Mute</button>
+    <button type="button" id="cCam">Camera</button>
+    <button type="button" id="cEnd" class="end">End</button>
+    <button type="button" id="cAcc" class="acc">Accept</button>
   </div>
 </div>
 
@@ -428,6 +492,14 @@ body::before {
 
   <div class="tab" id="tab-chat" role="tabpanel" aria-labelledby="t-chat">
 
+  <div class="chathead" id="chatHead">
+    <div><b id="chName">Hamro Kura</b><span id="chSub">Call garna tala ko button thichnus</span></div>
+    <div class="chbtn">
+      <button type="button" id="callVideo" aria-label="Video call"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="3"/><path d="M16 10.5l5-3v9l-5-3z"/></svg></button>
+      <button type="button" id="callVoice" aria-label="Voice call"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg></button>
+    </div>
+  </div>
+
   <section aria-label="Saved chat">
     <div class="chat" id="chat"></div>
     <p class="empty" id="empty" hidden>Abhi kunai kura save bhayeko chhaina. Tala kura lekhnus ya photo halnus, ani pathaunus.</p>
@@ -445,6 +517,7 @@ body::before {
         <input type="file" id="photoInput" accept="image/*,video/*" multiple hidden>
       </label>
       <button class="btn quiet" type="button" id="notifBtn" style="align-self:flex-start">Notification on garnus</button>
+      <p class="note" id="iosHint" hidden>iPhone ma: Safari ma Share → Add to Home Screen garnus. Tespachhi Home Screen ko icon bata kholera yaha Notification on garnus.</p>
       <details>
         <summary>Kahile ko kura ho? (mitti ra samay badalnus)</summary>
         <input type="datetime-local" id="when" aria-label="Date and time of this message">
@@ -462,17 +535,18 @@ body::before {
     <div class="replybar" id="replyBar" hidden><div><b id="rpWho"></b><span id="rpText"></span></div><button class="ic sm" type="button" id="rpX" aria-label="Reply cancel">✕</button></div>
     <p class="picked" id="picked"></p>
     <div class="bar2">
-      <button class="ic" type="button" id="plusBtn" aria-label="Aru options" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="stroke-width:2"><path d="M12 4v16M4 12h16"/></svg></button>
-      <div class="pill">
-        <textarea id="text" rows="1" maxlength="4000" placeholder="Kura lekhnus..." aria-label="Message"></textarea>
-        <button class="ic sm" type="button" id="stickerBtn" aria-label="Emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3.5h8A4.5 4.5 0 0 1 20.5 8v5L13 20.5H8A4.5 4.5 0 0 1 3.5 16V8A4.5 4.5 0 0 1 8 3.5z"/><path d="M20.5 13H17a4 4 0 0 0-4 4v3.5"/></svg></button>
-      </div>
-      <label class="ic" id="camLabel" aria-label="Camera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.6-2.4h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.6"/></svg><input type="file" id="camInput" accept="image/*" capture="environment" hidden></label>
+      <div class="pill"><textarea id="text" rows="1" maxlength="4000" placeholder="Kura lekhnus..." aria-label="Message"></textarea></div>
       <div class="recbar" id="recBar" hidden><span class="recdot"></span><span id="recTime">0:00</span><span class="grow"></span><button class="btn quiet" type="button" id="recCancel">Cancel</button></div>
-      <button class="round" type="button" id="send" aria-label="Send">
+      <div class="tools">
+        <button class="ic" type="button" id="plusBtn" aria-label="Aru options" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="stroke-width:2"><path d="M12 4v16M4 12h16"/></svg></button>
+        <span class="sp"></span>
+        <button class="ic sm" type="button" id="stickerBtn" aria-label="Emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3.5h8A4.5 4.5 0 0 1 20.5 8v5L13 20.5H8A4.5 4.5 0 0 1 3.5 16V8A4.5 4.5 0 0 1 8 3.5z"/><path d="M20.5 13H17a4 4 0 0 0-4 4v3.5"/></svg></button>
+        <label class="ic" id="camLabel" aria-label="Camera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.6-2.4h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.6"/></svg><input type="file" id="camInput" accept="image/*" capture="environment" hidden></label>
+        <button class="round" type="button" id="send" aria-label="Send">
         <svg class="mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/></svg>
         <svg class="snd" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="stroke-width:2.4"><path d="M12 19V5M5.5 11.5L12 5l6.5 6.5"/></svg>
       </button>
+      </div>
     </div>
     <p class="status" id="status" role="status"></p>
   </section>
@@ -668,6 +742,7 @@ body::before {
 
   var ready = window.supabase && CONFIG.SUPABASE_KEY.indexOf("PASTE") !== 0;
   var sb = ready ? window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY, { auth: { persistSession: true, autoRefreshToken: true } }) : null;
+  window.hkSb = sb;
 
   // ---- Small adapter so the rest of the page keeps using the same db/assets calls, now backed by Supabase ----
   function uid() { return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2); }
@@ -928,6 +1003,7 @@ body::before {
     document.querySelector(".pill").hidden = on;
     $("plusBtn").hidden = on;
     $("camLabel").hidden = on || !assets;
+    $("stickerBtn").hidden = on;
     if (on) { $("plusPanel").hidden = true; $("emojiTray").hidden = true; }
     updateBar();
   }
@@ -997,7 +1073,10 @@ body::before {
     $("emojiTray").appendChild(b);
   });
 
-  function snip(m) { return m.text ? m.text.slice(0, 80) : (m.photos.length ? "Photo" : (m.vids.length ? "Video" : (m.voice ? "Voice message" : ""))); }
+  var ICON_V = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="3"/><path d="M16 10.5l5-3v9l-5-3z"/></svg>';
+  var ICON_P = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>';
+  function fmtDur(sec) { sec = Number(sec) || 0; return sec < 60 ? sec + " sec" : Math.round(sec / 60) + " min"; }
+  function snip(m) { if (m.type === "call") return m.kind === "video" ? "Video call" : "Voice call"; return m.text ? m.text.slice(0, 80) : (m.photos.length ? "Photo" : (m.vids.length ? "Video" : (m.voice ? "Voice message" : ""))); }
   function setReply(m) {
     replyTo = { id: m.id, from: m.from, text: snip(m) };
     $("rpWho").textContent = m.from === "Aaru" ? "Butki" : m.from;
@@ -1024,9 +1103,7 @@ body::before {
     unread++;
     document.title = "(" + unread + ") Hamro Kura";
     try { if (navigator.vibrate) navigator.vibrate(120); } catch (e) {}
-    if (window.Notification && Notification.permission === "granted") {
-      try { new Notification(m.from === "Aaru" ? "Butki" : m.from, { body: snip(m) || "Naya message", tag: "hk-msg" }); } catch (e) {}
-    }
+    if (window.hkNotify) window.hkNotify(m.from === "Aaru" ? "Butki" : m.from, snip(m) || "Naya message", "hk-msg");
   }
   document.addEventListener("visibilitychange", function () {
     if (!document.hidden && !$("tab-chat").hidden) { unread = 0; document.title = "Hamro Kura"; }
@@ -1064,11 +1141,31 @@ body::before {
     var lastDay = "";
     msgs.slice(Math.max(0, msgs.length - shown)).forEach(function (m) {
       var d = new Date(m.at);
-      var day = d.toLocaleDateString("en-US", { timeZone: "Asia/Kathmandu", weekday: "long", day: "numeric", month: "long", year: "numeric" });
-      if (day !== lastDay) { chatEl.appendChild(el("p", "day", day)); lastDay = day; }
-      var wrap = el("div", "msg " + (m.from === "Jash" ? "j" : "a"));
+      var dayKey = d.toLocaleDateString("en-CA", { timeZone: "Asia/Kathmandu" });
+      if (dayKey !== lastDay) {
+        var tk = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kathmandu" });
+        var yk = new Date(Date.now() - 86400000).toLocaleDateString("en-CA", { timeZone: "Asia/Kathmandu" });
+        var label = dayKey === tk ? "Today" : (dayKey === yk ? "Yesterday" : d.toLocaleDateString("en-US", { timeZone: "Asia/Kathmandu", day: "numeric", month: "long", year: "numeric" }));
+        chatEl.appendChild(el("p", "day", label));
+        lastDay = dayKey;
+      }
+      var wrap = el("div", "msg " + (m.from === window.hkMe ? "j" : "a"));
       wrap.id = "m-" + m.id;
       var bubble = el("div", "bubble");
+      if (m.type === "call") {
+        var mine = m.from === window.hkMe, st = m.status || "missed";
+        if ((st === "ringing" || st === "answered") && Date.now() - m.at > 120000) st = st === "answered" ? "ended" : "missed";
+        var kw = m.kind === "video" ? "video" : "voice";
+        var missedIn = !mine && (st === "missed" || st === "ringing");
+        var cttl = missedIn ? "Missed " + kw + " call" : (m.kind === "video" ? "Video call" : "Voice call");
+        var csub = missedIn ? "Tap to call back" : st === "ringing" ? "Calling..." : st === "answered" ? "In call" : st === "ended" ? fmtDur(m.dur) : st === "declined" ? "Declined" : "No answer";
+        var cm = el("button", "callmsg" + (missedIn ? " miss" : ""));
+        cm.type = "button";
+        var ci = el("span", "ci"); ci.innerHTML = m.kind === "video" ? ICON_V : ICON_P; cm.appendChild(ci);
+        var ct = el("span"); ct.appendChild(el("b", null, cttl)); ct.appendChild(el("small", null, csub)); cm.appendChild(ct);
+        if (missedIn) cm.addEventListener("click", function () { if (window.hkStartCall) window.hkStartCall(m.kind); });
+        bubble.appendChild(cm);
+      }
       if (m.reply) {
         var rq = el("button", "quote");
         rq.type = "button";
@@ -1108,11 +1205,13 @@ body::before {
         v.src = window.hkBlobBase + vid + "#t=0.1";
         bubble.appendChild(v);
       });
+      var foot = el("span", "bt");
+      foot.appendChild(el("span", null, d.toLocaleTimeString("en-US", { timeZone: "Asia/Kathmandu", hour: "numeric", minute: "2-digit" })));
+      if (m.from === window.hkMe) foot.appendChild(el("span", "tk" + (m.seen ? " seen" : ""), m.seen ? "\u2713\u2713" : "\u2713"));
+      bubble.appendChild(foot);
       var col = el("div", "col");
       col.appendChild(bubble);
-      var meta = el("div", "meta");
-      meta.appendChild(el("span", null, (m.from === "Aaru" ? "Butki" : m.from) + " · " + d.toLocaleTimeString("en-US", { timeZone: "Asia/Kathmandu", hour: "numeric", minute: "2-digit" })));
-      if (m.from === window.hkMe) meta.appendChild(el("span", "tick" + (m.seen ? " seen" : ""), m.seen ? "\u2713\u2713 Seen" : "\u2713"));
+      var meta = el("div", "meta acts");
       var rp = el("button", "del", "Reply");
       rp.type = "button";
       rp.addEventListener("click", function () { setReply(m); });
@@ -1130,6 +1229,12 @@ body::before {
       }
       meta.appendChild(del);
       col.appendChild(meta);
+      bubble.addEventListener("click", function (e) {
+        if (e.target.closest("button, audio, video, a")) return;
+        var was = meta.classList.contains("show");
+        document.querySelectorAll(".acts.show").forEach(function (x) { x.classList.remove("show"); });
+        if (!was) meta.classList.add("show");
+      });
       wrap.appendChild(col);
       chatEl.appendChild(wrap);
     });
@@ -1145,7 +1250,7 @@ body::before {
   function ingest(snap) {
     msgs = snap.docs.map(function (d) {
       var x = d.data() || {};
-      return { id: d.id, from: x.from === "Jash" ? "Jash" : "Aaru", text: String(x.text || ""), at: Number(x.at) || 0, photos: Array.isArray(x.photos) ? x.photos.filter(function (s) { return typeof s === "string"; }) : [], voice: typeof x.voice === "string" ? x.voice : "", vids: Array.isArray(x.vids) ? x.vids.filter(function (s) { return typeof s === "string"; }) : [], seen: Number(x.seen) || 0, reply: (x.reply && typeof x.reply === "object") ? { id: String(x.reply.id || ""), from: x.reply.from === "Jash" ? "Jash" : "Aaru", text: String(x.reply.text || "") } : null };
+      return { id: d.id, from: x.from === "Jash" ? "Jash" : "Aaru", text: String(x.text || ""), at: Number(x.at) || 0, photos: Array.isArray(x.photos) ? x.photos.filter(function (s) { return typeof s === "string"; }) : [], voice: typeof x.voice === "string" ? x.voice : "", vids: Array.isArray(x.vids) ? x.vids.filter(function (s) { return typeof s === "string"; }) : [], type: String(x.type || ""), kind: x.kind === "video" ? "video" : "voice", status: String(x.status || ""), dur: Number(x.dur) || 0, seen: Number(x.seen) || 0, reply: (x.reply && typeof x.reply === "object") ? { id: String(x.reply.id || ""), from: x.reply.from === "Jash" ? "Jash" : "Aaru", text: String(x.reply.text || "") } : null };
     });
     byId = {};
     msgs.forEach(function (m) { byId[m.id] = m; });
@@ -2492,6 +2597,263 @@ body::before {
   renderTop(); renderMem(); renderNotes();
   if (window.hkMe) start();
   document.addEventListener("hk-login", start);
+})();
+</script>
+
+<script>
+(function () {
+  var VAPID_PUBLIC = "BH73SKYklzKUtuplVi9wliCPtfWdGQv80RAeb1s61SSfGtMtNFqtg2Wr-CKhKcHNOYZiTBZG3CHMqxygpWgBfv4";
+  var $ = function (id) { return document.getElementById(id); };
+  var sb = null, db = null, chatCol = null, ch = null;
+  var call = null, ended = {}, actx = null, ringIv = null, timerIv = null;
+  var ICE = { iceServers: [
+    { urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun1.l.google.com:19302" },
+    { urls: ["turn:openrelay.metered.ca:80", "turn:openrelay.metered.ca:443", "turns:openrelay.metered.ca:443?transport=tcp"], username: "openrelayproject", credential: "openrelayproject" }
+  ] };
+  var supported = !!(window.RTCPeerConnection && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  function other() { return window.hkMe === "Aaru" ? "Jash" : "Butki"; }
+  function toast(msg) { var s = $("status"); if (s) { s.textContent = msg; s.className = "status err"; } }
+  function mmss(ms) { var t = Math.floor(ms / 1000), m = Math.floor(t / 60), x = t % 60; return (m < 10 ? "0" : "") + m + ":" + (x < 10 ? "0" : "") + x; }
+
+  // ---------- PWA, notifications, push ----------
+  if ("serviceWorker" in navigator) { navigator.serviceWorker.register("sw.js").catch(function () {}); }
+  window.hkNotify = function (title, body, tag) {
+    if (!window.Notification || Notification.permission !== "granted") return;
+    function fallback() { try { new Notification(title, { body: body, tag: tag }); } catch (e) {} }
+    if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+      navigator.serviceWorker.ready.then(function (r) { return r.showNotification(title, { body: body, tag: tag, icon: "icon-192.png", badge: "icon-192.png", renotify: true }); }).catch(fallback);
+    } else fallback();
+  };
+  function b64u(str) {
+    var pad = "=".repeat((4 - str.length % 4) % 4), b = (str + pad).replace(/-/g, "+").replace(/_/g, "/"), raw = atob(b), out = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+    return out;
+  }
+  function saveSub(sub) {
+    if (!db || !sub) return;
+    var j = sub.toJSON(), col = db.collection("push"), un = null, done = false;
+    un = col.orderBy("at", "asc").onSnapshot(function (s) {
+      if (done) return; done = true;
+      if (un) un();
+      var has = s.docs.some(function (d) { var x = d.data() || {}; return x.sub && x.sub.endpoint === j.endpoint; });
+      if (!has) col.add({ who: window.hkMe, sub: j, at: Date.now() }).catch(function () {});
+    }, function () {});
+  }
+  function subscribePush() {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window) || !VAPID_PUBLIC) return Promise.resolve();
+    return navigator.serviceWorker.ready.then(function (reg) {
+      return reg.pushManager.getSubscription().then(function (sub) {
+        return sub || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(VAPID_PUBLIC) });
+      });
+    }).then(saveSub).catch(function () { toast("Push notification chalena. iPhone ma Home Screen bata kholnus."); });
+  }
+  $("notifBtn").addEventListener("click", function () {
+    if (!window.Notification) return;
+    Notification.requestPermission().then(function (p) { if (p === "granted") subscribePush(); });
+  });
+  var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  var standalone = window.navigator.standalone === true || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+  if (isIOS && !standalone) $("iosHint").hidden = false;
+
+  // ---------- sounds ----------
+  function ensureAudio() {
+    try { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === "suspended") actx.resume(); } catch (e) {}
+  }
+  document.addEventListener("pointerdown", ensureAudio, { passive: true });
+  function beep(freq, at, dur) {
+    if (!actx) return;
+    var o = actx.createOscillator(), g = actx.createGain();
+    o.type = "sine"; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(0.18, at + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+    o.connect(g); g.connect(actx.destination); o.start(at); o.stop(at + dur + 0.05);
+  }
+  function startRing(incoming) {
+    stopRing();
+    function once() {
+      if (actx) { var t = actx.currentTime + 0.02; if (incoming) { beep(880, t, 0.28); beep(660, t + 0.34, 0.28); beep(880, t + 0.8, 0.28); beep(660, t + 1.14, 0.28); } else { beep(440, t, 0.9); } }
+      if (incoming && navigator.vibrate) { try { navigator.vibrate([350, 150, 350]); } catch (e) {} }
+    }
+    once(); ringIv = setInterval(once, 2800);
+  }
+  function stopRing() { clearInterval(ringIv); ringIv = null; if (navigator.vibrate) { try { navigator.vibrate(0); } catch (e) {} } }
+
+  // ---------- signaling (live only, nothing saved) ----------
+  function send(m) { if (ch) ch.send({ type: "broadcast", event: "sig", payload: m }); }
+
+  // ---------- UI ----------
+  function setUi(mode, text) {
+    var u = $("callUi"), vid = call && call.kind === "video";
+    u.hidden = false;
+    u.className = "mode-" + mode + (vid ? " video" : "");
+    $("callName").textContent = other();
+    $("callState").textContent = text || "";
+    $("cAcc").hidden = mode !== "incoming";
+    $("cMute").hidden = mode === "incoming";
+    $("cCam").hidden = mode === "incoming" || !vid;
+    $("cEnd").textContent = mode === "incoming" ? "Decline" : "End";
+  }
+  function onConnected() {
+    if (!call || call.connectedAt) return;
+    call.connectedAt = Date.now();
+    stopRing(); clearInterval(call.resend); clearTimeout(call.ringT);
+    setUi("live", "00:00");
+    timerIv = setInterval(function () { if (call && call.connectedAt) $("callState").textContent = mmss(Date.now() - call.connectedAt); }, 500);
+    if (call.role === "caller" && call.docP) call.docP.then(function (r) { return chatCol.doc(r.id).update({ status: "answered" }); }).catch(function () {});
+  }
+  function micFail(e) {
+    var n = e && (e.name || e.code);
+    if (n === "NotAllowedError" || n === "SecurityError") toast("Mic/camera permission diyenau. Browser settings ma allow garnus.");
+    else if (n === "NotFoundError") toast("Mic ya camera bhetiyena.");
+    else toast("Call chalena (" + (n || "error") + ").");
+  }
+
+  // ---------- peer connection ----------
+  function makePc() {
+    var pc = new RTCPeerConnection(ICE);
+    pc.ontrack = function (e) {
+      var v = $("remoteV");
+      if (v.srcObject !== e.streams[0]) { v.srcObject = e.streams[0]; if (v.play) v.play().catch(function () {}); }
+    };
+    function chk() {
+      if (!call || call.pc !== pc) return;
+      var s = pc.connectionState || pc.iceConnectionState;
+      if (s === "connected" || s === "completed") onConnected();
+      else if (s === "failed") { toast("Call connect bhayena. Network herera feri try garnus."); endCall("missed", true, "failed"); }
+    }
+    pc.onconnectionstatechange = chk;
+    pc.oniceconnectionstatechange = chk;
+    return pc;
+  }
+  function waitIce(pc) {
+    return new Promise(function (res) {
+      if (pc.iceGatheringState === "complete") return res();
+      var t = setTimeout(done, 3000);
+      function done() { clearTimeout(t); pc.removeEventListener("icegatheringstatechange", chk); res(); }
+      function chk() { if (pc.iceGatheringState === "complete") done(); }
+      pc.addEventListener("icegatheringstatechange", chk);
+    });
+  }
+  function getMedia(kind) { return navigator.mediaDevices.getUserMedia({ audio: true, video: kind === "video" ? { facingMode: "user" } : false }); }
+
+  function endCall(status, tell, why) {
+    if (!call) return;
+    var c = call; call = null;
+    ended[c.id] = Date.now();
+    stopRing(); clearInterval(timerIv); clearInterval(c.resend); clearTimeout(c.ringT); clearInterval(c.watch);
+    if (tell) send({ t: "bye", id: c.id, from: window.hkMe, why: why || "" });
+    try { if (c.pc) c.pc.close(); } catch (e) {}
+    if (c.local) c.local.getTracks().forEach(function (t) { t.stop(); });
+    $("remoteV").srcObject = null; $("localV").srcObject = null;
+    $("callUi").hidden = true;
+    $("cMute").textContent = "Mute"; $("cCam").textContent = "Camera";
+    if (c.role === "caller" && c.docP && chatCol) {
+      var dur = c.connectedAt ? Math.round((Date.now() - c.connectedAt) / 1000) : 0;
+      var st = c.connectedAt ? "ended" : (status || "missed");
+      c.docP.then(function (r) { return chatCol.doc(r.id).update({ status: st, dur: dur }); }).catch(function () {});
+    }
+  }
+
+  function startCall(kind) {
+    if (!supported) { toast("Yo browser ma call chalena."); return; }
+    if (call || !ch) return;
+    ensureAudio();
+    var c = call = { id: Date.now() + "-" + Math.random().toString(36).slice(2, 6), kind: kind, role: "caller" };
+    setUi("calling", "Calling...");
+    getMedia(kind).then(function (stream) {
+      if (call !== c) { stream.getTracks().forEach(function (t) { t.stop(); }); return; }
+      c.local = stream; $("localV").srcObject = stream;
+      var pc = c.pc = makePc();
+      stream.getTracks().forEach(function (t) { pc.addTrack(t, stream); });
+      return pc.createOffer().then(function (o) { return pc.setLocalDescription(o); }).then(function () { return waitIce(pc); }).then(function () {
+        if (call !== c) return;
+        var offer = { type: "offer", sdp: pc.localDescription.sdp };
+        function sendOffer() { send({ t: "offer", id: c.id, from: window.hkMe, kind: kind, sdp: offer }); }
+        if (chatCol) { c.docP = chatCol.add({ from: window.hkMe, type: "call", kind: kind, status: "ringing", text: "", photos: [], at: Date.now() }); c.docP.catch(function () {}); }
+        sendOffer(); c.resend = setInterval(sendOffer, 2000);
+        c.ringT = setTimeout(function () { endCall("missed", true, "timeout"); }, 45000);
+        startRing(false); setUi("calling", "Ringing...");
+      });
+    }).catch(function (e) { micFail(e); endCall("missed", false); });
+  }
+  window.hkStartCall = startCall;
+
+  function incoming(m) {
+    call = { id: m.id, kind: m.kind, role: "callee", offer: m.sdp, lastOffer: Date.now() };
+    setUi("incoming", (m.kind === "video" ? "Video call" : "Voice call") + "...");
+    startRing(true);
+    if (document.hidden && window.hkNotify) window.hkNotify(other() + " is calling", m.kind === "video" ? "Video call" : "Voice call", "hk-call");
+    var c = call;
+    c.watch = setInterval(function () { if (call === c && !c.pc && Date.now() - c.lastOffer > 7000) endCall("missed", false); }, 1500);
+  }
+  function accept() {
+    var c = call;
+    if (!c || c.role !== "callee" || c.pc) return;
+    ensureAudio(); stopRing();
+    setUi("live", "Connecting...");
+    getMedia(c.kind).then(function (stream) {
+      if (call !== c) { stream.getTracks().forEach(function (t) { t.stop(); }); return; }
+      c.local = stream; $("localV").srcObject = stream;
+      var pc = c.pc = makePc();
+      stream.getTracks().forEach(function (t) { pc.addTrack(t, stream); });
+      return pc.setRemoteDescription(c.offer).then(function () { return pc.createAnswer(); }).then(function (a) { return pc.setLocalDescription(a); }).then(function () { return waitIce(pc); }).then(function () {
+        send({ t: "answer", id: c.id, from: window.hkMe, sdp: pc.localDescription.sdp });
+      });
+    }).catch(function (e) { micFail(e); endCall("missed", true, "error"); });
+  }
+
+  function handleSig(m) {
+    if (!m || m.from === window.hkMe) return;
+    if (m.t === "offer") {
+      if (ended[m.id]) return;
+      if (call) { if (call.id === m.id) call.lastOffer = Date.now(); else send({ t: "busy", id: m.id, from: window.hkMe }); return; }
+      incoming(m);
+    } else if (call && call.id === m.id) {
+      if (m.t === "answer" && call.role === "caller" && !call.answered) {
+        call.answered = true; clearInterval(call.resend); clearTimeout(call.ringT); stopRing();
+        setUi("live", "Connecting...");
+        call.pc.setRemoteDescription({ type: "answer", sdp: m.sdp }).catch(function () { toast("Call connect bhayena."); endCall("missed", true, "error"); });
+      } else if (m.t === "bye") {
+        endCall(call.connectedAt ? "ended" : (m.why === "declined" ? "declined" : "missed"), false);
+      } else if (m.t === "busy") {
+        toast(other() + " arko call ma chha."); endCall("declined", false);
+      }
+    }
+  }
+
+  $("callVideo").addEventListener("click", function () { startCall("video"); });
+  $("callVoice").addEventListener("click", function () { startCall("voice"); });
+  $("cAcc").addEventListener("click", accept);
+  $("cEnd").addEventListener("click", function () {
+    if (!call) return;
+    if (call.role === "callee" && !call.pc) endCall("declined", true, "declined");
+    else endCall(call.connectedAt ? "ended" : "missed", true, "hangup");
+  });
+  $("cMute").addEventListener("click", function () {
+    if (!call || !call.local) return;
+    var t = call.local.getAudioTracks()[0]; if (!t) return;
+    t.enabled = !t.enabled; $("cMute").textContent = t.enabled ? "Mute" : "Unmute";
+  });
+  $("cCam").addEventListener("click", function () {
+    if (!call || !call.local) return;
+    var t = call.local.getVideoTracks()[0]; if (!t) return;
+    t.enabled = !t.enabled; $("cCam").textContent = t.enabled ? "Camera" : "Camera on";
+  });
+
+  function init() {
+    if (ch) return;
+    sb = window.hkSb;
+    if (!sb) { $("chatHead").hidden = true; return; }
+    $("chName").textContent = other();
+    $("chSub").textContent = supported ? "Call garna tala ko button thichnus" : "Yo browser ma call chalena";
+    if (!supported) { $("callVideo").hidden = true; $("callVoice").hidden = true; }
+    window.claude.use("db").then(function (d) {
+      db = d; chatCol = d ? d.collection("chat") : null;
+      if (window.Notification && Notification.permission === "granted") subscribePush();
+    });
+    ch = sb.channel("hk-call").on("broadcast", { event: "sig" }, function (p) { handleSig(p.payload); }).subscribe();
+  }
+  document.addEventListener("hk-login", init);
+  if (window.hkMe) init();
 })();
 </script>
 
