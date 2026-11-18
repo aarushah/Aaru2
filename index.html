@@ -647,7 +647,7 @@ body::before {
 (function () {
   var CONFIG = {
     SUPABASE_URL: "https://dfrxalbsdqoizlnexati.supabase.co",
-    SUPABASE_KEY: "PASTE_PUBLISHABLE_KEY_HERE",          // sb_publishable_... (public key, never the secret key)
+    SUPABASE_KEY: "sb_publishable_cabuNuNh5Z8A7fCRUeKDlg_LMDEnW__",   // public key (safe in the page). Never put the secret key here
     PEOPLE: {                                             // login email (lowercase) -> name used in the chat
       "paste-butki-email@example.com": "Aaru",
       "paste-jash-email@example.com": "Jash"
@@ -766,9 +766,20 @@ body::before {
   try { lockedUntil = Number(localStorage.getItem("hk-lock")) || 0; } catch (e) {}
   function enterApp(user) {
     var name = CONFIG.PEOPLE[String(user.email || "").toLowerCase()];
-    if (!name) {
-      $("gStatus").className = "status err"; $("gStatus").textContent = "Yo email yaha ko lagi setup gareko chhaina.";
-      sb.auth.signOut();
+    if (!name) { try { name = localStorage.getItem("hk-who-" + user.id); } catch (e) {} }
+    if (name !== "Aaru" && name !== "Jash") {
+      // First login on this phone: ask who this is (remembered afterwards).
+      var gs = $("gStatus");
+      gs.className = "status"; gs.textContent = "Tapai ko ho? ";
+      [["Butki", "Aaru"], ["Jash", "Jash"]].forEach(function (pr) {
+        var b = document.createElement("button");
+        b.type = "button"; b.className = "btn quiet"; b.textContent = pr[0]; b.style.marginLeft = "8px";
+        b.addEventListener("click", function () {
+          try { localStorage.setItem("hk-who-" + user.id, pr[1]); } catch (e) {}
+          gs.textContent = ""; enterApp(user);
+        });
+        gs.appendChild(b);
+      });
       return;
     }
     window.hkMe = name;
