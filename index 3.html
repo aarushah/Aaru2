@@ -1,0 +1,2498 @@
+<!doctype html><html><head><meta charset=utf8><title>Hamro Kura</title><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600&family=Tiro+Devanagari+Hindi:ital@0;1&display=swap">
+<style>
+/* Layout: photo background under a soft veil. A glass hero card with both photos, pill tabs, then glass panels.
+   Chat is two-sided: Butki on the left, Jash on the right in a blue gradient. */
+:root {
+  --bg: #EAF2FD;
+  --surface: #FFFFFF;
+  --fg: #0E1B33;
+  --muted: #51668A;
+  --line: #C9D9EE;
+  --accent: #1F5FBF;
+  --accent-ink: #FFFFFF;
+  --sky: #3E8FE0;
+  --danger: #A11A1A;
+  --glass: color-mix(in srgb, var(--surface) 76%, transparent);
+  --glass-line: color-mix(in srgb, var(--surface) 55%, var(--line));
+  --shadow: 0 8px 28px color-mix(in srgb, var(--fg) 14%, transparent);
+  --font-display: "Tiro Devanagari Hindi", "Noto Serif Devanagari", Georgia, serif;
+  --font-body: "Mukta", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A1224;
+    --surface: #12203B;
+    --fg: #E8F0FC;
+    --muted: #A0B4D6;
+    --line: #28395E;
+    --accent: #7DB2FF;
+    --accent-ink: #0A1224;
+    --sky: #5FA3F5;
+    --danger: #FF8A8A;
+    --shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0A1224;
+  --surface: #12203B;
+  --fg: #E8F0FC;
+  --muted: #A0B4D6;
+  --line: #28395E;
+  --accent: #7DB2FF;
+  --accent-ink: #0A1224;
+  --sky: #5FA3F5;
+  --danger: #FF8A8A;
+  --shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.55;
+  padding-block: 18px 72px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+h1, h2, p { margin: 0; }
+button, input, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.label { font-size: 0.76rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+
+/* Glass surfaces */
+.top, .composer, .lock, .add, .card, .empty {
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  backdrop-filter: blur(14px) saturate(1.2);
+}
+
+/* Hero: a solid gradient banner, no photos */
+.top {
+  position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 4px;
+  padding: 18px 20px 22px; min-width: 0; border: 0;
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 55%, var(--sky)));
+  color: var(--accent-ink);
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+.top::after {
+  content: "\2764\FE0E"; position: absolute; right: -14px; bottom: -34px; font-size: 9rem; line-height: 1;
+  color: var(--accent-ink); opacity: 0.12; pointer-events: none;
+}
+.topline { align-self: stretch; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+.top .label { color: inherit; opacity: 0.85; }
+.top .dev { color: inherit; opacity: 0.92; }
+.top .btn.quiet { color: inherit; border-color: color-mix(in srgb, var(--accent-ink) 55%, transparent); }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(2.7rem, 13vw, 4.4rem); line-height: 1.05; text-wrap: balance; }
+.dev { font-family: var(--font-display); font-size: clamp(1.2rem, 4.8vw, 1.6rem); color: var(--accent); line-height: 1.3; }
+
+/* Buttons */
+.btn {
+  cursor: pointer; border: 0; border-radius: 999px; padding: 11px 22px; font-weight: 600;
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 62%, var(--sky)));
+  color: var(--accent-ink); box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.btn[disabled] { opacity: 0.5; cursor: default; box-shadow: none; }
+.btn.quiet { background: transparent; color: var(--fg); border: 1px solid var(--glass-line); box-shadow: none; font-weight: 600; padding: 6px 14px; font-size: 0.9rem; }
+.btn.quiet.danger { color: var(--danger); border-color: var(--danger); }
+
+/* Tabs */
+h2 { margin: 0; }
+.tabs {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px;
+  background: var(--glass); border: 1px solid var(--glass-line); border-radius: 999px;
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+}
+.tabs button { cursor: pointer; border: 0; background: transparent; border-radius: 999px; padding: 10px 12px; font-weight: 600; color: var(--muted); }
+.tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 35%, transparent); }
+.tab { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+
+/* Composer */
+.composer { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
+.who { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: color-mix(in srgb, var(--bg) 60%, transparent); border-radius: 999px; }
+.who button { cursor: pointer; border: 0; background: transparent; border-radius: 999px; padding: 8px 12px; font-weight: 600; color: var(--muted); }
+.who button[aria-pressed="true"] { background: var(--surface); color: var(--accent); box-shadow: 0 2px 8px color-mix(in srgb, var(--fg) 14%, transparent); }
+.composer textarea, .paste textarea {
+  width: 100%; min-height: 84px; resize: vertical; padding: 12px 14px; line-height: 1.5;
+  background: color-mix(in srgb, var(--surface) 82%, transparent); border: 1px solid var(--glass-line); border-radius: 16px;
+}
+.composer-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.composer-row .grow { flex: 1 1 auto; }
+.picked { font-size: 0.9rem; color: var(--muted); overflow-wrap: anywhere; min-width: 0; }
+details { border-top: 1px solid var(--glass-line); padding-top: 10px; }
+summary { cursor: pointer; color: var(--muted); font-size: 0.92rem; }
+details input[type="datetime-local"] { margin-top: 8px; padding: 8px 12px; background: color-mix(in srgb, var(--surface) 82%, transparent); border: 1px solid var(--glass-line); border-radius: 12px; max-width: 100%; }
+.paste { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.paste p { font-size: 0.9rem; color: var(--muted); }
+.status { font-size: 0.92rem; color: var(--muted); min-height: 1.4em; }
+.status.err { color: var(--danger); }
+
+/* Chat */
+.chat { display: flex; flex-direction: column; gap: 10px; }
+.day {
+  align-self: center; margin-top: 12px; padding: 3px 14px; border-radius: 999px;
+  font-size: 0.74rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 600;
+  background: var(--glass); border: 1px solid var(--glass-line);
+}
+.msg { display: flex; gap: 8px; align-items: flex-end; max-width: 94%; min-width: 0; }
+.msg.a { align-self: flex-start; }
+.msg.j { align-self: flex-end; flex-direction: row-reverse; }
+.col { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.msg.a .col { align-items: flex-start; }
+.msg.j .col { align-items: flex-end; }
+.avatar { flex: 0 0 auto; width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--glass-line); margin-bottom: 24px; }
+.bubble { padding: 10px 15px; border-radius: 20px; min-width: 0; max-width: 100%; display: flex; flex-direction: column; gap: 8px; overflow-wrap: anywhere; box-shadow: 0 2px 10px color-mix(in srgb, var(--fg) 10%, transparent); }
+.a .bubble { background: var(--glass); border: 1px solid var(--glass-line); border-bottom-left-radius: 6px; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.j .bubble { background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 60%, var(--sky))); color: var(--accent-ink); border-bottom-right-radius: 6px; }
+.bubble p { white-space: pre-wrap; }
+.photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 6px; }
+.photos button { padding: 0; border: 0; border-radius: 12px; overflow: hidden; cursor: pointer; background: transparent; aspect-ratio: 1; }
+.photos img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.meta { font-size: 0.76rem; color: var(--muted); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding-inline: 4px; }
+.meta .del { background: none; border: 0; padding: 0; cursor: pointer; color: var(--muted); text-decoration: underline; font-size: 0.76rem; }
+.meta .del.armed { color: var(--danger); }
+.empty { padding: 26px 18px; color: var(--muted); text-align: center; }
+
+/* Photo viewer */
+.lightbox { position: fixed; inset: 0; z-index: 20; background: rgba(4, 8, 18, 0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  padding-block: calc(16px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.lightbox img { max-width: 100%; max-height: 78%; object-fit: contain; border-radius: 8px; }
+.lightbox .btns { display: flex; gap: 10px; }
+.lightbox .btn.quiet { color: #fff; border-color: rgba(255, 255, 255, 0.5); }
+.lightbox .btn.quiet.danger { color: #FF9A9A; border-color: #FF9A9A; }
+
+/* Lock */
+.lock { display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 28px 18px 26px; }
+.lock > p:first-child { font-family: var(--font-display); font-size: 1.4rem; }
+.dots { display: flex; gap: 16px; height: 24px; align-items: center; }
+.dots i { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--accent); display: block; transition: background 0.15s ease, transform 0.15s ease; }
+.dots i.on { background: var(--accent); transform: scale(1.15); }
+.pad { display: grid; grid-template-columns: repeat(3, 76px); gap: 12px; }
+.pad button {
+  height: 76px; width: 76px; border-radius: 50%; cursor: pointer; font-size: 1.55rem; font-variant-numeric: tabular-nums;
+  background: color-mix(in srgb, var(--surface) 80%, transparent); border: 1px solid var(--glass-line);
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--fg) 10%, transparent);
+}
+.pad button:active { background: var(--accent); color: var(--accent-ink); }
+.pad .blank { visibility: hidden; }
+.pad .back { font-size: 1.15rem; color: var(--muted); }
+.lock .status { text-align: center; }
+
+/* Videos */
+.bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.add { display: flex; flex-direction: column; gap: 10px; padding: 16px; }
+.add input[type="text"] { width: 100%; padding: 12px 14px; background: color-mix(in srgb, var(--surface) 82%, transparent); border: 1px solid var(--glass-line); border-radius: 16px; min-width: 0; }
+.add-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.add-row .grow { flex: 1 1 auto; }
+.note { font-size: 0.88rem; color: var(--muted); }
+.list { display: flex; flex-direction: column; gap: 18px; }
+.card { display: flex; flex-direction: column; gap: 8px; padding: 12px 12px 14px; min-width: 0; }
+.card video { display: block; width: 100%; max-height: 70vh; background: #000; border-radius: 14px; }
+.card h2 { font-family: var(--font-display); font-weight: 400; font-size: 1.3rem; line-height: 1.3; overflow-wrap: anywhere; padding-inline: 4px; }
+.card .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding-inline: 4px; }
+.card .when { font-size: 0.85rem; color: var(--muted); }
+.stat { font-size: 0.9rem; color: var(--muted); padding-inline: 4px; }
+.hist { padding-inline: 4px; }
+.hist summary { cursor: pointer; font-size: 0.9rem; color: var(--accent); }
+.histlist { margin: 8px 0 0; padding-left: 1.2em; font-size: 0.9rem; color: var(--muted); display: flex; flex-direction: column; gap: 2px; font-variant-numeric: tabular-nums; }
+
+/* Soft gradient background */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1;
+  background:
+    radial-gradient(ellipse at 15% 0%, color-mix(in srgb, var(--sky) 32%, transparent), transparent 60%),
+    radial-gradient(ellipse at 100% 100%, color-mix(in srgb, var(--accent) 24%, transparent), transparent 55%),
+    var(--bg);
+}
+
+@media (prefers-reduced-motion: reduce) { .dots i { transition: none; } }
+@media (max-width: 380px) { .pad { grid-template-columns: repeat(3, 68px); gap: 10px; } .pad button { width: 68px; height: 68px; } }
+
+/* Login, delete PIN, links */
+.tabs { grid-template-columns: repeat(3, 1fr); }
+.gate { max-width: 420px; margin: 8vh auto 0; display: flex; flex-direction: column; gap: 14px; padding: 26px 22px 24px;
+  background: var(--glass); border: 1px solid var(--glass-line); border-radius: 22px; box-shadow: var(--shadow);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); }
+.gate h1 { font-family: var(--font-display); font-weight: 400; font-size: 2.6rem; line-height: 1.1; text-align: center; }
+.gate .dev { text-align: center; }
+.gate form { display: flex; flex-direction: column; gap: 12px; }
+.gate label { display: flex; flex-direction: column; gap: 4px; font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.gate input, .askbox input { width: 100%; padding: 12px 14px; font-size: 1.05rem; letter-spacing: normal; text-transform: none; color: var(--fg);
+  background: color-mix(in srgb, var(--surface) 82%, transparent); border: 1px solid var(--glass-line); border-radius: 16px; }
+.gate .note { text-align: center; }
+.askbox { width: min(340px, 100%); display: flex; flex-direction: column; gap: 12px; padding: 22px 20px; color: var(--fg);
+  background: var(--surface); border: 1px solid var(--glass-line); border-radius: 22px; box-shadow: var(--shadow); }
+.askbox .btns { display: flex; gap: 10px; justify-content: flex-end; }
+.askbox .btn.quiet { color: var(--fg); border-color: var(--glass-line); }
+.meline { font-size: 0.9rem; color: var(--accent); font-weight: 600; letter-spacing: normal; text-transform: none; }
+.badge { align-self: flex-start; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); margin-left: 4px; }
+.badge.yt { background: #D8221C; color: #fff; }
+.badge.tt { background: #111; color: #fff; }
+.card .open { align-self: flex-start; text-decoration: none; display: inline-block; margin-left: 4px; }
+.add input[type="url"] { width: 100%; padding: 12px 14px; background: color-mix(in srgb, var(--surface) 82%, transparent); border: 1px solid var(--glass-line); border-radius: 16px; min-width: 0; }
+
+/* Album */
+.tabs { grid-template-columns: repeat(4, 1fr); }
+.tabs button { padding: 10px 4px; font-size: 0.95rem; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
+.tile { position: relative; padding: 0; border: 0; border-radius: 16px; overflow: hidden; cursor: pointer; aspect-ratio: 1; background: var(--line); box-shadow: 0 2px 10px color-mix(in srgb, var(--fg) 12%, transparent); }
+.tile img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.tile .cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 8px 6px; font-size: 0.78rem; line-height: 1.25; color: #fff; text-align: left;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.62), transparent); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+#pinask, #editask { z-index: 40; }
+.askbox textarea { width: 100%; min-height: 110px; resize: vertical; padding: 12px 14px; line-height: 1.5; background: color-mix(in srgb, var(--surface) 82%, transparent); border: 1px solid var(--glass-line); border-radius: 16px; }
+.viewer { gap: 10px; }
+.viewer img { max-height: 70%; }
+.viewer .lbcap { color: #fff; text-align: center; max-width: 560px; font-size: 1.05rem; overflow-wrap: anywhere; }
+.viewer .lbmeta { color: rgba(255, 255, 255, 0.7); font-size: 0.85rem; text-align: center; }
+.viewer .nav { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.viewer .nav .btn { min-width: 52px; }
+.viewer .nav .btn.quiet { padding: 8px 16px; font-size: 1.1rem; }
+.viewer .nav .btn.quiet.text { font-size: 0.9rem; padding: 8px 14px; }
+
+/* Message bar */
+.composer { position: sticky; bottom: 0; z-index: 5; gap: 8px; padding: 8px 10px calc(4px + env(safe-area-inset-bottom, 0px) * 0.4); margin-bottom: -72px; border-radius: 24px 24px 0 0; }
+.bar2 { display: flex; align-items: center; gap: 6px; }
+.ic { flex: 0 0 auto; width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center; background: none; border: 0; border-radius: 50%; color: var(--fg); cursor: pointer; padding: 0; }
+.ic svg { width: 28px; height: 28px; }
+.ic.sm { width: 38px; height: 38px; }
+.ic.sm svg { width: 26px; height: 26px; }
+.pill { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 4px; background: color-mix(in srgb, var(--surface) 70%, transparent); border: 1px solid var(--glass-line); border-radius: 999px; padding: 1px 4px 1px 16px; }
+.composer .pill textarea { flex: 1 1 auto; width: auto; min-width: 0; min-height: 0; height: 44px; max-height: 120px; border: 0; background: transparent; border-radius: 0; resize: none; outline: 0; padding: 10px 0; line-height: 1.35; overflow-y: auto; }
+.round { flex: 0 0 auto; width: 46px; height: 46px; border-radius: 50%; border: 0; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; background: var(--fg); color: var(--bg); padding: 0; }
+.round[disabled] { opacity: 0.5; cursor: default; }
+.round svg { width: 26px; height: 26px; }
+.round .snd { display: none; }
+.round.has .mic { display: none; }
+.round.has .snd { display: block; }
+.round.rec { background: var(--danger); color: #fff; }
+.panel { display: flex; flex-direction: column; gap: 10px; padding: 2px 4px 10px; border-bottom: 1px solid var(--glass-line); }
+.tray { display: flex; flex-wrap: wrap; gap: 2px; padding: 0 2px; }
+.tray button { font-size: 1.6rem; line-height: 1; background: none; border: 0; cursor: pointer; padding: 6px 8px; border-radius: 12px; }
+.recbar { flex: 1 1 auto; display: flex; align-items: center; gap: 10px; padding: 0 6px 0 14px; min-height: 46px; font-variant-numeric: tabular-nums; }
+.recbar .grow { flex: 1 1 auto; }
+.recdot { width: 12px; height: 12px; border-radius: 50%; background: var(--danger); animation: blink 1s infinite; }
+@keyframes blink { 50% { opacity: 0.25; } }
+@media (prefers-reduced-motion: reduce) { .recdot { animation: none; } }
+.bubble audio { width: 230px; max-width: 100%; }
+.tabs { grid-template-columns: repeat(3, 1fr); border-radius: 24px; }
+.tabs button { font-size: 0.92rem; padding: 10px 4px; }
+#sg-now { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 8px); z-index: 4; }
+#sg-audio { width: 100%; }
+.songrow { display: flex; align-items: center; gap: 12px; padding-inline: 4px; }
+.songrow h2 { flex: 1 1 auto; min-width: 0; font-size: 1.15rem; padding: 0; }
+.play { flex: 0 0 auto; width: 46px; height: 46px; border-radius: 50%; border: 0; cursor: pointer; background: var(--accent); color: var(--accent-ink); display: inline-flex; align-items: center; justify-content: center; padding: 0; }
+.play svg { width: 22px; height: 22px; }
+.card.now { outline: 2px solid var(--accent); }
+.picked:empty { display: none; }
+.picked { padding-inline: 8px; }
+
+/* Tabs scroll sideways */
+.tabs { display: flex; overflow-x: auto; scrollbar-width: none; gap: 2px; border-radius: 24px; }
+.tabs::-webkit-scrollbar { display: none; }
+.tabs button { flex: 0 0 auto; padding: 10px 18px; }
+/* Hero extras */
+.pairrow { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; font-size: 1.3rem; }
+.hav { width: 46px; height: 46px; border-radius: 50%; object-fit: cover; border: 2px solid color-mix(in srgb, var(--accent-ink) 70%, transparent); }
+.tl-actions { display: flex; gap: 6px; align-items: center; }
+.tl-actions .btn { padding: 6px 12px; }
+.palette { display: flex; gap: 12px; margin-top: 8px; }
+.palette button { width: 34px; height: 34px; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--accent-ink) 70%, transparent); cursor: pointer; padding: 0; }
+.palette button[aria-pressed="true"] { outline: 3px solid var(--accent-ink); outline-offset: 2px; }
+/* Chat extras */
+.quote { display: flex; flex-direction: column; gap: 2px; text-align: left; background: color-mix(in srgb, currentColor 14%, transparent); border: 0; border-left: 3px solid currentColor; border-radius: 10px; padding: 6px 10px; font: inherit; color: inherit; cursor: pointer; }
+.quote b { font-size: 0.8rem; opacity: 0.85; }
+.quote span { font-size: 0.9rem; opacity: 0.9; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.msg.flash .bubble { outline: 3px solid var(--accent); }
+.tick { font-size: 0.8rem; opacity: 0.8; }
+.tick.seen { color: var(--accent); opacity: 1; font-weight: 600; }
+.chatvid { width: 100%; max-width: 280px; max-height: 360px; border-radius: 14px; background: #000; }
+.replybar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 6px 6px 10px; border-left: 3px solid var(--accent); border-radius: 10px; background: color-mix(in srgb, var(--surface) 70%, transparent); }
+.replybar div { display: flex; flex-direction: column; min-width: 0; }
+.replybar b { font-size: 0.8rem; color: var(--accent); }
+.replybar span { font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.typing { padding-inline: 10px; font-size: 0.85rem; color: var(--muted); }
+/* Din tab */
+.bignum { font-family: var(--font-display); font-size: clamp(3rem, 16vw, 4.5rem); color: var(--accent); line-height: 1.1; }
+.muted { color: var(--muted); }
+.cds { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.cds li { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.cds .n { font-family: var(--font-display); font-size: 1.4rem; color: var(--accent); white-space: nowrap; }
+.memimg { width: 100%; max-height: 420px; object-fit: cover; border-radius: 16px; }
+.today-note { font-family: var(--font-display); font-size: 1.35rem; line-height: 1.4; }
+#dn-map { height: 320px; border-radius: 16px; overflow: hidden; z-index: 0; }
+.dn-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.dn-row input[type="text"], .dn-row input[type="date"], .dnf input { flex: 1 1 140px; min-width: 0; padding: 10px 14px; background: color-mix(in srgb, var(--surface) 82%, transparent); border: 1px solid var(--glass-line); border-radius: 14px; }
+.dnf { display: grid; gap: 10px; margin-top: 10px; }
+.dnf label { display: grid; gap: 4px; font-size: 0.9rem; color: var(--muted); }
+.plist { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 8px; }
+.plist li { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+
+</style>
+
+<div class="gate" id="gate">
+  <h1>Hamro Kura</h1>
+  <p class="dev" lang="ne">हाम्रा कुराकानी</p>
+  <form id="gateForm" autocomplete="off">
+    <label>Email
+      <input type="email" id="gUser" autocapitalize="none" autocomplete="username" aria-label="Email">
+    </label>
+    <label>Password
+      <input type="password" id="gPass" autocomplete="current-password" aria-label="Password">
+    </label>
+    <button class="btn" type="submit" id="gBtn">Login</button>
+    <p class="status" id="gStatus" role="status"></p>
+    <p style="text-align:center;font-size:0.75rem;opacity:0.6;margin-top:6px">v6</p>
+  </form>
+</div>
+
+<div class="lightbox" id="pinask" hidden role="dialog" aria-modal="true" aria-label="Delete PIN">
+  <div class="askbox">
+    <p id="pinMsg">Delete garna PIN halnus</p>
+    <input type="password" id="pinInput" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" aria-label="Delete PIN">
+    <p class="status err" id="pinErr" role="status"></p>
+    <div class="btns">
+      <button class="btn quiet" type="button" id="pinCancel">Cancel</button>
+      <button class="btn" type="button" id="pinOk">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="lightbox" id="editask" hidden role="dialog" aria-modal="true" aria-label="Edit message">
+  <div class="askbox">
+    <p>Message edit garnus</p>
+    <textarea id="editText" maxlength="4000" aria-label="Message text"></textarea>
+    <div class="btns">
+      <button class="btn quiet" type="button" id="editCancel">Cancel</button>
+      <button class="btn" type="button" id="editOk">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="lightbox viewer" id="al-lb" hidden role="dialog" aria-modal="true" aria-label="Album photo">
+  <img id="al-lbImg" alt="">
+  <p class="lbcap" id="al-lbCap"></p>
+  <p class="lbmeta" id="al-lbMeta"></p>
+  <div class="nav">
+    <button class="btn quiet" type="button" id="al-prev" aria-label="Previous photo">&#8249;</button>
+    <button class="btn quiet text" type="button" id="al-close">Close</button>
+    <button class="btn quiet text danger" type="button" id="al-del">Delete</button>
+    <button class="btn quiet" type="button" id="al-next" aria-label="Next photo">&#8250;</button>
+  </div>
+</div>
+
+<main class="wrap" id="app" hidden>
+  <header class="top">
+    <div class="topline">
+      <p class="label" id="count">Butki &amp; Jash</p>
+      <div class="tl-actions">
+        <button class="btn quiet" type="button" id="modeBtn" aria-label="Dark ya light mode">🌙</button>
+        <button class="btn quiet" type="button" id="colorBtn" aria-label="Rang chhannus" aria-expanded="false">🎨</button>
+        <button class="btn quiet" type="button" id="logout">Logout</button>
+      </div>
+    </div>
+    <h1>Hamro Kura</h1>
+    <p class="dev" lang="ne">हाम्रा कुराकानी</p>
+    <div class="palette" id="palette" hidden>
+      <button type="button" data-c="blue" style="background:#3E8FE0" aria-label="Nilo" aria-pressed="true"></button>
+      <button type="button" data-c="rose" style="background:#EC6A94" aria-label="Gulabi" aria-pressed="false"></button>
+      <button type="button" data-c="green" style="background:#3FB27A" aria-label="Hariyo" aria-pressed="false"></button>
+      <button type="button" data-c="purple" style="background:#9B6FE8" aria-label="Baijani" aria-pressed="false"></button>
+    </div>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="Sections">
+    <button type="button" role="tab" id="t-chat" aria-selected="true" aria-controls="tab-chat">Kura</button>
+    <button type="button" role="tab" id="t-vid" aria-selected="false" aria-controls="tab-videos">Videos</button>
+    <button type="button" role="tab" id="t-links" aria-selected="false" aria-controls="tab-links">Links</button>
+    <button type="button" role="tab" id="t-album" aria-selected="false" aria-controls="tab-album">Album</button>
+    <button type="button" role="tab" id="t-songs" aria-selected="false" aria-controls="tab-songs">Songs</button>
+    <button type="button" role="tab" id="t-clips" aria-selected="false" aria-controls="tab-clips">Clips</button>
+    <button type="button" role="tab" id="t-din" aria-selected="false" aria-controls="tab-din">Din</button>
+  </div>
+
+  <div class="tab" id="tab-chat" role="tabpanel" aria-labelledby="t-chat">
+
+  <section aria-label="Saved chat">
+    <div class="chat" id="chat"></div>
+    <p class="empty" id="empty" hidden>Abhi kunai kura save bhayeko chhaina. Tala kura lekhnus ya photo halnus, ani pathaunus.</p>
+  </section>
+
+  <section class="composer" aria-label="Add to our chat">
+    <div class="tray" id="emojiTray" hidden></div>
+    <div class="panel" id="plusPanel" hidden>
+      <p class="label meline" id="meLine"></p>
+      <div class="who" id="whoBox" role="group" aria-label="Who is writing">
+        <button type="button" id="whoA" aria-pressed="true">Butki</button>
+        <button type="button" id="whoJ" aria-pressed="false">Jash</button>
+      </div>
+      <label class="btn quiet" id="photoLabel" style="align-self:flex-start">Gallery bata photo/video
+        <input type="file" id="photoInput" accept="image/*,video/*" multiple hidden>
+      </label>
+      <button class="btn quiet" type="button" id="notifBtn" style="align-self:flex-start">Notification on garnus</button>
+      <details>
+        <summary>Kahile ko kura ho? (mitti ra samay badalnus)</summary>
+        <input type="datetime-local" id="when" aria-label="Date and time of this message">
+      </details>
+      <details>
+        <summary>Purano chat ek choti paste garnus</summary>
+        <div class="paste">
+          <p>Pratyek line "Butki: ..." ya "Jash: ..." bata suru hunuparchha. Naya line bina naam ko bhaye tyo aghillo message ko bhaag hunchha. Mitti mathi ko "Kahile" bata linchha.</p>
+          <textarea id="bulk" placeholder="Butki: Hello&#10;Jash: Hi, kasto chha?" aria-label="Whole chat to paste"></textarea>
+          <button class="btn quiet" type="button" id="bulkBtn">Save pasted chat</button>
+        </div>
+      </details>
+    </div>
+    <p class="typing" id="typing" hidden></p>
+    <div class="replybar" id="replyBar" hidden><div><b id="rpWho"></b><span id="rpText"></span></div><button class="ic sm" type="button" id="rpX" aria-label="Reply cancel">✕</button></div>
+    <p class="picked" id="picked"></p>
+    <div class="bar2">
+      <button class="ic" type="button" id="plusBtn" aria-label="Aru options" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="stroke-width:2"><path d="M12 4v16M4 12h16"/></svg></button>
+      <div class="pill">
+        <textarea id="text" rows="1" maxlength="4000" placeholder="Kura lekhnus..." aria-label="Message"></textarea>
+        <button class="ic sm" type="button" id="stickerBtn" aria-label="Emoji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3.5h8A4.5 4.5 0 0 1 20.5 8v5L13 20.5H8A4.5 4.5 0 0 1 3.5 16V8A4.5 4.5 0 0 1 8 3.5z"/><path d="M20.5 13H17a4 4 0 0 0-4 4v3.5"/></svg></button>
+      </div>
+      <label class="ic" id="camLabel" aria-label="Camera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.6-2.4h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.6"/></svg><input type="file" id="camInput" accept="image/*" capture="environment" hidden></label>
+      <div class="recbar" id="recBar" hidden><span class="recdot"></span><span id="recTime">0:00</span><span class="grow"></span><button class="btn quiet" type="button" id="recCancel">Cancel</button></div>
+      <button class="round" type="button" id="send" aria-label="Send">
+        <svg class="mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/></svg>
+        <svg class="snd" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="stroke-width:2.4"><path d="M12 19V5M5.5 11.5L12 5l6.5 6.5"/></svg>
+      </button>
+    </div>
+    <p class="status" id="status" role="status"></p>
+  </section>
+  </div>
+
+  <div class="tab" id="tab-videos" role="tabpanel" aria-labelledby="t-vid" hidden>
+    <p class="label" id="pv-count">Locked</p>
+<section class="lock" id="pv-lock" aria-label="Enter PIN">
+    <p>PIN halnus</p>
+    <div class="dots" id="pv-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <div class="pad" id="pv-pad"></div>
+    <p class="status" id="pv-lockStatus" role="status"></p>
+  </section>
+
+  <section id="pv-vault" hidden aria-label="Videos">
+    <div class="wrap">
+      <div class="bar">
+        <p class="status" id="pv-status" role="status"></p>
+        <button class="btn quiet" type="button" id="pv-relock">Lock</button>
+      </div>
+      <div class="add" id="pv-add">
+        <input type="text" id="pv-title" maxlength="120" placeholder="Video ko naam (jastai: Nagarkot, Jan 2026)" aria-label="Video title">
+        <div class="add-row">
+          <label class="btn quiet">Video chhannus
+            <input type="file" id="pv-file" accept="video/*" hidden>
+          </label>
+          <span class="picked" id="pv-picked"></span>
+          <span class="grow"></span>
+          <button class="btn" type="button" id="pv-save">Save</button>
+        </div>
+        <p class="note">Ek video 20 MB samma (MP4, MOV, WebM). Thulo video bhaye pahile chhoto banaunus.</p>
+      </div>
+      <div class="list" id="pv-list"></div>
+      <p class="empty" id="pv-empty" hidden>Abhi kunai video save bhayeko chhaina. Mathi naam lekhera video chhannus, ani Save thichnus.</p>
+    </div>
+  </section>
+  </div>
+
+  <div class="tab" id="tab-links" role="tabpanel" aria-labelledby="t-links" hidden>
+    <p class="label" id="ln-count">Loading</p>
+    <div class="add" id="ln-add">
+      <input type="text" id="ln-title" maxlength="120" placeholder="Naam (jastai: Hamro gaana)" aria-label="Link title">
+      <input type="url" id="ln-url" inputmode="url" placeholder="Link paste garnus (https://...)" aria-label="Link address">
+      <div class="add-row"><span class="grow"></span><button class="btn" type="button" id="ln-save">Save</button></div>
+      <p class="note">YouTube ra TikTok yo page bhitra sidhai chalaauna milchhaina. "Kholnus" thichda naya tab ma khulchha, ra kasle kahile kholyo yaha dekhinchha.</p>
+    </div>
+    <p class="status" id="ln-status" role="status"></p>
+    <div class="list" id="ln-list"></div>
+    <p class="empty" id="ln-empty" hidden>Abhi kunai link save bhayeko chhaina. Mathi naam ra link halera Save thichnus.</p>
+  </div>
+
+  <div class="tab" id="tab-album" role="tabpanel" aria-labelledby="t-album" hidden>
+    <p class="label" id="al-count">Loading</p>
+    <div class="add" id="al-add">
+      <input type="text" id="al-cap" maxlength="120" placeholder="Photo ko naam ya kura (optional)" aria-label="Photo caption">
+      <div class="add-row">
+        <label class="btn quiet">Photo chhannus
+          <input type="file" id="al-file" accept="image/*" multiple hidden>
+        </label>
+        <span class="picked" id="al-picked"></span>
+        <span class="grow"></span>
+        <button class="btn" type="button" id="al-save">Save</button>
+      </div>
+    </div>
+    <p class="status" id="al-status" role="status"></p>
+    <div class="grid" id="al-grid"></div>
+    <p class="empty" id="al-empty" hidden>Album abhi khali chha. Mathi photo chhanera Save thichnus.</p>
+  </div>
+
+  <div class="tab" id="tab-songs" role="tabpanel" aria-labelledby="t-songs" hidden>
+    <p class="label" id="sg-count">Loading</p>
+    <div class="card" id="sg-now" hidden>
+      <p class="label" id="sg-nowTitle"></p>
+      <audio id="sg-audio" controls preload="none"></audio>
+    </div>
+    <div class="add" id="sg-add">
+      <input type="text" id="sg-title" maxlength="120" placeholder="Gaana ko naam (optional)" aria-label="Song title">
+      <div class="add-row">
+        <label class="btn quiet">Gaana chhannus
+          <input type="file" id="sg-file" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.flac" multiple hidden>
+        </label>
+        <span class="picked" id="sg-picked"></span>
+        <span class="grow"></span>
+        <button class="btn" type="button" id="sg-save">Save</button>
+      </div>
+      <p class="note">Ek gaana 20 MB samma. Play thichda gaana pahile load hunchha, ani ek pachhi arko aafai chalchha.</p>
+    </div>
+    <p class="status" id="sg-status" role="status"></p>
+    <div class="list" id="sg-list"></div>
+    <p class="empty" id="sg-empty" hidden>Song album abhi khali chha. Mathi gaana chhanera Save thichnus.</p>
+  </div>
+
+  <div class="tab" id="tab-clips" role="tabpanel" aria-labelledby="t-clips" hidden>
+    <p class="label" id="cl-count">Loading</p>
+    <div class="add" id="cl-add">
+      <input type="text" id="cl-title" maxlength="120" placeholder="Video ko naam (optional)" aria-label="Video title">
+      <div class="add-row">
+        <label class="btn quiet">Video chhannus
+          <input type="file" id="cl-file" accept="video/*" multiple hidden>
+        </label>
+        <span class="picked" id="cl-picked"></span>
+        <span class="grow"></span>
+        <button class="btn" type="button" id="cl-save">Save</button>
+      </div>
+      <p class="note">Yo album ma PIN chhaina, sabaile sidhai herna milchha. Ek video 20 MB samma. Thulo video bhaye pahile chhoto (trim) banaunus.</p>
+    </div>
+    <p class="status" id="cl-status" role="status"></p>
+    <div class="list" id="cl-list"></div>
+    <p class="empty" id="cl-empty" hidden>Video album abhi khali chha. Mathi video chhanera Save thichnus.</p>
+  </div>
+
+  <div class="tab" id="tab-din" role="tabpanel" aria-labelledby="t-din" hidden>
+    <div class="card">
+      <p class="label">Hamro kura suru bhayeko</p>
+      <p class="bignum" id="dn-days">—</p>
+      <p class="muted" id="dn-ymd"></p>
+    </div>
+    <div class="card">
+      <p class="label">Aaune din haru</p>
+      <ul class="cds" id="dn-list"></ul>
+    </div>
+    <div class="card">
+      <p class="label">Aajako yaad</p>
+      <div id="dn-mem"></div>
+    </div>
+    <div class="card">
+      <p class="label">Aajako love note</p>
+      <p class="today-note" id="dn-note"></p>
+      <div class="dn-row" style="margin-top:12px">
+        <input type="text" id="dn-noteIn" maxlength="300" placeholder="Naya love note lekhnus" aria-label="New love note">
+        <button class="btn" type="button" id="dn-noteAdd">Add</button>
+      </div>
+      <details style="margin-top:12px"><summary>Sabai notes (<span id="dn-nCount">0</span>)</summary><ul class="plist" id="dn-notes"></ul></details>
+    </div>
+    <div class="card">
+      <details>
+        <summary>Mitti haru set garnus</summary>
+        <div class="dnf">
+          <label>Hamro kura suru bhayeko mitti<input type="date" id="dn-start"></label>
+          <label>Anniversary ko mitti<input type="date" id="dn-anniv"></label>
+          <label>Butki ko birthday<input type="date" id="dn-bA"></label>
+          <label>Jash ko birthday<input type="date" id="dn-bJ"></label>
+          <button class="btn" type="button" id="dn-save">Save</button>
+        </div>
+      </details>
+    </div>
+    <div class="card">
+      <p class="label">Hamro thau haru</p>
+      <div id="dn-map" aria-label="Map"></div>
+      <p class="muted" id="dn-pickInfo" style="margin-top:8px">Map ma thichera thau chhannus, ya "Ahile ko thau" thichnus.</p>
+      <div class="dn-row">
+        <input type="text" id="dn-placeName" maxlength="80" placeholder="Thau ko naam" aria-label="Place name">
+        <button class="btn quiet" type="button" id="dn-here">Ahile ko thau</button>
+        <button class="btn" type="button" id="dn-placeAdd">Thau thapnus</button>
+      </div>
+      <ul class="plist" id="dn-places"></ul>
+    </div>
+    <p class="status" id="dn-status" role="status"></p>
+  </div>
+</main>
+
+<div class="lightbox" id="lb" hidden role="dialog" aria-modal="true" aria-label="Photo">
+  <img id="lbImg" alt="">
+  <div class="btns">
+    <button class="btn quiet" type="button" id="lbClose">Close</button>
+    <button class="btn quiet danger" type="button" id="lbDel">Remove photo</button>
+  </div>
+</div>
+
+<script>
+// ============ SETUP: fill these three things in, then upload the file ============
+(function () {
+  var CONFIG = {
+    SUPABASE_URL: "https://dfrxalbsdqoizlnexati.supabase.co",
+    SUPABASE_KEY: "sb_publishable_cabuNuNh5Z8A7fCRUeKDlg_LMDEnW__",   // public key (safe in the page). Never put the secret key here
+    PEOPLE: {                                             // login email (lowercase) -> name used in the chat
+      "paste-butki-email@example.com": "Aaru",
+      "paste-jash-email@example.com": "Jash"
+    }
+  };
+  // ================================================================================
+  var DELETE_PIN_HASH = "c1e4e22b324729f628df23e1d58b45f1d2c481f13955b5cede7143fd1575e7d0";
+  var $ = function (id) { return document.getElementById(id); };
+  window.hkMe = null;
+  window.hkBlobBase = CONFIG.SUPABASE_URL + "/storage/v1/object/public/media/";
+
+  function sha(s) {
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)).then(function (b) {
+      return Array.prototype.map.call(new Uint8Array(b), function (x) { return (x < 16 ? "0" : "") + x.toString(16); }).join("");
+    });
+  }
+  window.hkSha = sha;
+
+  var ready = window.supabase && CONFIG.SUPABASE_KEY.indexOf("PASTE") !== 0;
+  var sb = ready ? window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY, { auth: { persistSession: true, autoRefreshToken: true } }) : null;
+
+  // ---- Small adapter so the rest of the page keeps using the same db/assets calls, now backed by Supabase ----
+  function uid() { return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2); }
+  function fail(err) { if (err && err.code == null) err.code = err.statusCode || err.error || err.message || "error"; throw err; }
+
+  function fetchAll(name) {
+    var rows = [];
+    function page(from) {
+      return sb.from("docs").select("id,data,created_at").eq("col", name).order("created_at", { ascending: true }).range(from, from + 999).then(function (r) {
+        if (r.error) fail(r.error);
+        rows = rows.concat(r.data);
+        return r.data.length === 1000 ? page(from + 1000) : rows;
+      });
+    }
+    return page(0);
+  }
+  function Query(name, field, dir, lim) { this.name = name; this.field = field; this.dir = dir; this.lim = lim; }
+  Query.prototype.limit = function (n) { return new Query(this.name, this.field, this.dir, n); };
+  Query.prototype.onSnapshot = function (cb, errCb) {
+    var q = this, alive = true, timer = null;
+    function snap(rows) {
+      var docs = rows.map(function (r) {
+        return { id: r.id, data: function () { return r.data; }, _at: Number(r.data && r.data[q.field]) || Date.parse(r.created_at) || 0 };
+      });
+      docs.sort(function (a, b) { return q.dir === "desc" ? b._at - a._at : a._at - b._at; });
+      if (q.lim) docs = docs.slice(0, q.lim);
+      return { docs: docs, metadata: { fromCache: false } };
+    }
+    function load() {
+      fetchAll(q.name).then(function (rows) { if (alive) cb(snap(rows)); })
+        .catch(function (e) { if (alive && errCb) errCb({ code: (e && (e.code || e.message)) || "error" }); });
+    }
+    function soon() { clearTimeout(timer); timer = setTimeout(load, 150); }
+    load();
+    var ch = sb.channel("docs-" + q.name + "-" + uid())
+      .on("postgres_changes", { event: "*", schema: "public", table: "docs" }, function (p) {
+        var n = p.new && p.new.col, o = p.old && p.old.col;
+        if (n === q.name || o === q.name || (!n && !o)) soon();
+      }).subscribe();
+    return function () { alive = false; clearTimeout(timer); sb.removeChannel(ch); };
+  };
+  function Collection(name) { this.name = name; }
+  Collection.prototype.orderBy = function (f, d) { return new Query(this.name, f, d || "asc", 0); };
+  Collection.prototype.add = function (data) {
+    return sb.from("docs").insert({ col: this.name, data: data }).select("id").single().then(function (r) {
+      if (r.error) fail(r.error);
+      return { id: r.data.id };
+    });
+  };
+  Collection.prototype.doc = function (id) {
+    return {
+      update: function (patch) {
+        return sb.from("docs").select("data").eq("id", id).single().then(function (r) {
+          if (r.error) fail(r.error);
+          return sb.from("docs").update({ data: Object.assign({}, r.data.data, patch) }).eq("id", id).then(function (u) { if (u.error) fail(u.error); });
+        });
+      },
+      delete: function () { return sb.from("docs").delete().eq("id", id).then(function (r) { if (r.error) fail(r.error); }); }
+    };
+  };
+  var assetsApi = ready ? {
+    upload: function (blob, opts) {
+      var type = (opts && opts.type) || blob.type || "application/octet-stream", id = uid();
+      return sb.storage.from("media").upload(id, blob, { contentType: type, upsert: false }).then(function (r) {
+        if (r.error) fail(r.error);
+        return { id: id };
+      });
+    },
+    delete: function (id) { return sb.storage.from("media").remove([id]).then(function (r) { if (r.error) fail(r.error); }); }
+  } : null;
+  var resolveLogin, loggedIn = new Promise(function (r) { resolveLogin = r; });
+  window.claude = {
+    use: function (name) {
+      if (!ready) return Promise.resolve(null);
+      return loggedIn.then(function () {
+        if (name === "db") return { collection: function (n) { return new Collection(n); } };
+        if (name === "assets") return assetsApi;
+        if (name === "user") return { id: function () { return Promise.resolve(window.hkMe || ""); }, profiles: function () { return Promise.resolve({}); } };
+        return null;
+      });
+    }
+  };
+  // "Typing..." signal between the two phones (live broadcast, nothing is saved).
+  var typingCh = null, typingCb = null;
+  window.hkTyping = {
+    start: function (cb) {
+      typingCb = cb;
+      if (!sb || typingCh) return;
+      typingCh = sb.channel("hk-typing").on("broadcast", { event: "typing" }, function (p) { if (typingCb) typingCb(p.payload || {}); }).subscribe();
+    },
+    send: function () { if (typingCh) typingCh.send({ type: "broadcast", event: "typing", payload: { who: window.hkMe } }); }
+  };
+
+  // ---- Login ----
+  var fails = 0, lockedUntil = 0;
+  try { lockedUntil = Number(localStorage.getItem("hk-lock")) || 0; } catch (e) {}
+  function enterApp(user) {
+    var name = CONFIG.PEOPLE[String(user.email || "").toLowerCase()];
+    if (!name) { try { name = localStorage.getItem("hk-who-" + user.id); } catch (e) {} }
+    if (name !== "Aaru" && name !== "Jash") {
+      // First login on this phone: ask who this is (remembered afterwards).
+      var gs = $("gStatus");
+      gs.className = "status"; gs.textContent = "Tapai ko ho? ";
+      [["Butki", "Aaru"], ["Jash", "Jash"]].forEach(function (pr) {
+        var b = document.createElement("button");
+        b.type = "button"; b.className = "btn quiet"; b.textContent = pr[0]; b.style.marginLeft = "8px";
+        b.addEventListener("click", function () {
+          try { localStorage.setItem("hk-who-" + user.id, pr[1]); } catch (e) {}
+          gs.textContent = ""; enterApp(user);
+        });
+        gs.appendChild(b);
+      });
+      return;
+    }
+    window.hkMe = name;
+    resolveLogin();
+    $("gate").hidden = true;
+    $("app").hidden = false;
+    document.dispatchEvent(new Event("hk-login"));
+  }
+  if (!ready) {
+    $("gStatus").className = "status err";
+    $("gStatus").textContent = window.supabase ? "Setup adhura chha: file ma SUPABASE_KEY halnus." : "Supabase library load bhayena. Internet herera feri kholnus.";
+  } else {
+    sb.auth.getSession().then(function (r) { if (r.data && r.data.session) enterApp(r.data.session.user); });
+  }
+  $("gateForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var st = $("gStatus");
+    var u = $("gUser").value.trim().toLowerCase(), pw = $("gPass").value;
+    if (!ready) return;
+    if (Date.now() < lockedUntil) { st.className = "status err"; st.textContent = "Dherai galat try bhayo. Kehi second parkhanus."; return; }
+    if (!u || !pw) { st.className = "status err"; st.textContent = "Email ra password duitai halnus."; return; }
+    st.className = "status"; st.textContent = "Login hudai chha...";
+    sb.auth.signInWithPassword({ email: u, password: pw }).then(function (r) {
+      if (r.error || !r.data || !r.data.user) {
+        fails++;
+        if (fails >= 5) { lockedUntil = Date.now() + 30000; fails = 0; try { localStorage.setItem("hk-lock", String(lockedUntil)); } catch (e2) {} }
+        st.className = "status err"; st.textContent = "Email ya password galat chha.";
+        return;
+      }
+      st.textContent = ""; $("gPass").value = "";
+      enterApp(r.data.user);
+    });
+  });
+  $("logout").addEventListener("click", function () {
+    (sb ? sb.auth.signOut() : Promise.resolve()).then(function () { location.reload(); });
+  });
+
+  // Delete PIN. Resolves true only when the right PIN is typed.
+  window.hkConfirmPin = function (msg) {
+    return new Promise(function (resolve) {
+      var box = $("pinask"), inp = $("pinInput"), err = $("pinErr");
+      $("pinMsg").textContent = msg || "Delete garna PIN halnus";
+      inp.value = ""; err.textContent = ""; box.hidden = false; inp.focus();
+      function done(ok) {
+        box.hidden = true;
+        $("pinOk").onclick = null; $("pinCancel").onclick = null; inp.onkeydown = null;
+        resolve(ok);
+      }
+      function check() {
+        sha("hkpin:" + inp.value).then(function (h) {
+          if (h === DELETE_PIN_HASH) done(true);
+          else { err.textContent = "PIN galat chha."; inp.value = ""; inp.focus(); }
+        });
+      }
+      $("pinOk").onclick = check;
+      $("pinCancel").onclick = function () { done(false); };
+      inp.onkeydown = function (e) { if (e.key === "Enter") check(); else if (e.key === "Escape") done(false); };
+    });
+  };
+})();
+</script>
+<script>
+(function () {
+  var msgs = [];
+  var byId = {};
+  var col = null, assets = null;
+  var loaded = false, busy = false;
+  var who = "Aaru";
+  var shown = 60;
+  var stickNext = true;
+  var replyTo = null, knownIds = null, unread = 0, seenSent = {}, lastTyping = 0, typingTimer = null;
+  var voice = null, listening = false, dictBase = "";
+  var editing = null;
+  var files = [];
+  var whenTouched = false;
+  var lbState = null;
+  var chain = {};
+
+  var $ = function (id) { return document.getElementById(id); };
+  var chatEl = $("chat"), emptyEl = $("empty"), statusEl = $("status");
+
+  function say(msg, isErr) { statusEl.textContent = msg || ""; statusEl.className = "status" + (isErr ? " err" : ""); }
+  function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+  function queue(id, fn) {
+    var p = (chain[id] || Promise.resolve()).then(fn).catch(function (e) { say("Save bhayena. Feri try garnus. (" + ((e && e.code) || "error") + ")", true); });
+    chain[id] = p;
+    return p;
+  }
+
+  try { var saved = localStorage.getItem("hk-who"); if (saved === "Aaru" || saved === "Jash") who = saved; } catch (e) {}
+  function setWho(w) {
+    who = w;
+    $("whoA").setAttribute("aria-pressed", w === "Aaru" ? "true" : "false");
+    $("whoJ").setAttribute("aria-pressed", w === "Jash" ? "true" : "false");
+    try { localStorage.setItem("hk-who", w); } catch (e) {}
+  }
+  $("whoA").addEventListener("click", function () { setWho("Aaru"); });
+  $("whoJ").addEventListener("click", function () { setWho("Jash"); });
+  setWho(who);
+
+  function pad(n) { return n < 10 ? "0" + n : String(n); }
+  function localInputValue(d) {
+    return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + "T" + pad(d.getHours()) + ":" + pad(d.getMinutes());
+  }
+  $("when").value = localInputValue(new Date());
+  $("when").addEventListener("input", function () { whenTouched = true; });
+  function chosenTime() {
+    if (!whenTouched) return Date.now();
+    var t = new Date($("when").value).getTime();
+    return isNaN(t) ? Date.now() : t;
+  }
+
+  ["photoInput", "camInput"].forEach(function (id) {
+    $(id).addEventListener("change", function () {
+      Array.prototype.slice.call($(id).files).forEach(function (f) { files.push(f); });
+      $(id).value = "";
+      $("picked").textContent = files.length ? files.length + " file chosen" : "";
+      updateBar();
+    });
+  });
+
+  function autoGrow() { var t = $("text"); t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 120) + "px"; }
+  function updateBar() {
+    var has = $("text").value.trim().length > 0 || files.length > 0;
+    var b = $("send");
+    b.classList.toggle("has", has || recording || !canRec);
+    b.setAttribute("aria-label", (has || recording || !canRec) ? "Send" : "Voice record garnus");
+  }
+  $("text").addEventListener("input", function () {
+    autoGrow(); updateBar();
+    var now = Date.now();
+    if (window.hkTyping && now - lastTyping > 2000) { lastTyping = now; window.hkTyping.send(); }
+  });
+  var canRec = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+  var recording = false, recorder = null, recChunks = [], recStart = 0, recTimer = null, recStream = null;
+
+  function micFail(e) {
+    var code = e && (e.code || e.name);
+    if (code === "NotAllowedError" || code === "SecurityError") { canRec = false; setRecording(false); say("Yo page ma mic block chha (" + code + "). Voice record garna milena.", true); }
+    else if (code === "NotFoundError") say("Mic bhetiyena.", true);
+    else say("Voice record chalena (" + (code || "error") + ").", true);
+  }
+  function setRecording(on) {
+    recording = on;
+    $("recBar").hidden = !on;
+    document.querySelector(".pill").hidden = on;
+    $("plusBtn").hidden = on;
+    $("camLabel").hidden = on || !assets;
+    if (on) { $("plusPanel").hidden = true; $("emojiTray").hidden = true; }
+    updateBar();
+  }
+  function fmt(ms) { var t = Math.floor(ms / 1000), m = Math.floor(t / 60), x = t % 60; return m + ":" + (x < 10 ? "0" : "") + x; }
+  function startRec() {
+    if (!canRec) { say("Yo browser ma voice record chalena.", true); return; }
+    say("");
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+      recStream = stream; recChunks = [];
+      var mt = "", types = ["audio/mp4", "audio/webm;codecs=opus", "audio/webm"];
+      for (var i = 0; i < types.length; i++) { if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(types[i])) { mt = types[i]; break; } }
+      recorder = mt ? new MediaRecorder(stream, { mimeType: mt }) : new MediaRecorder(stream);
+      recorder.ondataavailable = function (ev) { if (ev.data && ev.data.size) recChunks.push(ev.data); };
+      recorder.start();
+      recStart = Date.now();
+      $("recTime").textContent = "0:00";
+      recTimer = setInterval(function () {
+        var el2 = Date.now() - recStart;
+        $("recTime").textContent = fmt(el2);
+        if (el2 > 300000) finishRec(true);
+      }, 250);
+      setRecording(true);
+    }).catch(micFail);
+  }
+  function finishRec(doSend) {
+    if (!recorder) return;
+    var rc = recorder, dur = Date.now() - recStart;
+    recorder = null;
+    clearInterval(recTimer);
+    rc.onstop = function () {
+      if (recStream) { recStream.getTracks().forEach(function (t) { t.stop(); }); recStream = null; }
+      var blob = new Blob(recChunks, { type: rc.mimeType || "audio/mp4" });
+      recChunks = [];
+      setRecording(false);
+      if (doSend && dur > 700 && blob.size) sendVoice(blob, dur);
+    };
+    try { rc.stop(); } catch (e) { setRecording(false); }
+  }
+  $("recCancel").addEventListener("click", function () { finishRec(false); });
+  function sendVoice(blob, dur) {
+    if (!col || !assets) { say("Voice pathauna login hunuparchha.", true); return; }
+    busy = true; render(); say("Voice upload hudai chha...");
+    var mp4 = /mp4|aac|m4a/i.test(blob.type), ty = mp4 ? "video/mp4" : "video/webm";
+    assets.upload(new Blob([blob], { type: ty }), { type: ty }).then(function (r) {
+      return col.add({ from: who, text: "", photos: [], voice: r.id, dur: Math.round(dur / 1000), at: Date.now(), reply: replyTo });
+    }).then(function () { say("Voice save bhayo."); stickNext = true; clearReply(); })
+      .catch(function (e) { say("Voice save bhayena (" + ((e && e.code) || "error") + ").", true); })
+      .then(function () { busy = false; render(); });
+  }
+
+  $("plusBtn").addEventListener("click", function () {
+    var p = $("plusPanel"); p.hidden = !p.hidden; $("emojiTray").hidden = true;
+    $("plusBtn").setAttribute("aria-expanded", String(!p.hidden));
+  });
+  $("stickerBtn").addEventListener("click", function () {
+    var t = $("emojiTray"); t.hidden = !t.hidden; $("plusPanel").hidden = true;
+    $("plusBtn").setAttribute("aria-expanded", "false");
+  });
+  ["\u2764\uFE0F", "\uD83E\uDD70", "\uD83D\uDE18", "\uD83D\uDE02", "\uD83E\uDD17", "\uD83D\uDE48", "\uD83D\uDE22", "\uD83D\uDC4D", "\uD83C\uDF38", "\u2728"].forEach(function (em) {
+    var b = el("button", null, em); b.type = "button"; b.setAttribute("aria-label", "Emoji " + em);
+    b.addEventListener("click", function () {
+      var ta = $("text"), st = ta.selectionStart == null ? ta.value.length : ta.selectionStart, en = ta.selectionEnd == null ? st : ta.selectionEnd;
+      ta.value = ta.value.slice(0, st) + em + ta.value.slice(en);
+      var pos = st + em.length; ta.focus(); try { ta.setSelectionRange(pos, pos); } catch (e) {}
+      autoGrow(); updateBar();
+    });
+    $("emojiTray").appendChild(b);
+  });
+
+  function snip(m) { return m.text ? m.text.slice(0, 80) : (m.photos.length ? "Photo" : (m.vids.length ? "Video" : (m.voice ? "Voice message" : ""))); }
+  function setReply(m) {
+    replyTo = { id: m.id, from: m.from, text: snip(m) };
+    $("rpWho").textContent = m.from === "Aaru" ? "Butki" : m.from;
+    $("rpText").textContent = replyTo.text;
+    $("replyBar").hidden = false;
+    $("text").focus();
+  }
+  function clearReply() { replyTo = null; $("replyBar").hidden = true; }
+  $("rpX").addEventListener("click", clearReply);
+
+  // Seen: when the other person's new messages are on screen, mark them seen.
+  function markSeen() {
+    if (!col || !loaded || document.hidden || $("tab-chat").hidden || !window.hkMe) return;
+    var now = Date.now(), n = 0;
+    msgs.forEach(function (m) {
+      if (n >= 50 || m.from === window.hkMe || m.seen || seenSent[m.id] || m.at < now - 3 * 86400000) return;
+      n++; seenSent[m.id] = 1;
+      col.doc(m.id).update({ seen: now }).catch(function () { delete seenSent[m.id]; });
+    });
+  }
+  // Notification while the page is open in the background (not a push from a closed phone).
+  function notify(m) {
+    if (!(document.hidden || $("tab-chat").hidden)) return;
+    unread++;
+    document.title = "(" + unread + ") Hamro Kura";
+    try { if (navigator.vibrate) navigator.vibrate(120); } catch (e) {}
+    if (window.Notification && Notification.permission === "granted") {
+      try { new Notification(m.from === "Aaru" ? "Butki" : m.from, { body: snip(m) || "Naya message", tag: "hk-msg" }); } catch (e) {}
+    }
+  }
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden && !$("tab-chat").hidden) { unread = 0; document.title = "Hamro Kura"; }
+    markSeen();
+  });
+  $("t-chat").addEventListener("click", function () { unread = 0; document.title = "Hamro Kura"; setTimeout(markSeen, 80); });
+  function onTyping(p) {
+    if (!p || !p.who || p.who === window.hkMe) return;
+    var t = $("typing");
+    t.textContent = (p.who === "Aaru" ? "Butki" : p.who) + " typing...";
+    t.hidden = false;
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(function () { t.hidden = true; }, 3000);
+  }
+  (function () {
+    var b = $("notifBtn");
+    if (!window.Notification) { b.hidden = true; return; }
+    function sync() { b.hidden = Notification.permission === "granted"; }
+    sync();
+    b.addEventListener("click", function () { Notification.requestPermission().then(sync); });
+  })();
+
+  function render() {
+    var nearBottom = (window.innerHeight + window.scrollY) >= (document.documentElement.scrollHeight - 240);
+    $("count").textContent = loaded ? (msgs.length ? msgs.length + (msgs.length === 1 ? " message saved" : " messages saved") : "Butki & Jash") : "Loading";
+    emptyEl.hidden = !(loaded && msgs.length === 0);
+    chatEl.textContent = "";
+    if (msgs.length > shown) {
+      var more = el("button", "btn quiet", "Aru purano kura dekhaunus (" + (msgs.length - shown) + ")");
+      more.type = "button";
+      more.style.alignSelf = "center";
+      more.addEventListener("click", function () { shown += 60; render(); });
+      chatEl.appendChild(more);
+    }
+    var lastDay = "";
+    msgs.slice(Math.max(0, msgs.length - shown)).forEach(function (m) {
+      var d = new Date(m.at);
+      var day = d.toLocaleDateString("en-US", { timeZone: "Asia/Kathmandu", weekday: "long", day: "numeric", month: "long", year: "numeric" });
+      if (day !== lastDay) { chatEl.appendChild(el("p", "day", day)); lastDay = day; }
+      var wrap = el("div", "msg " + (m.from === "Jash" ? "j" : "a"));
+      wrap.id = "m-" + m.id;
+      var bubble = el("div", "bubble");
+      if (m.reply) {
+        var rq = el("button", "quote");
+        rq.type = "button";
+        rq.appendChild(el("b", null, m.reply.from === "Aaru" ? "Butki" : m.reply.from));
+        rq.appendChild(el("span", null, m.reply.text));
+        rq.addEventListener("click", function () {
+          var t = document.getElementById("m-" + m.reply.id);
+          if (t) { t.scrollIntoView({ block: "center", behavior: "smooth" }); t.classList.add("flash"); setTimeout(function () { t.classList.remove("flash"); }, 1200); }
+        });
+        bubble.appendChild(rq);
+      }
+      if (m.text) bubble.appendChild(el("p", null, m.text));
+      if (m.photos.length) {
+        var ph = el("div", "photos");
+        m.photos.forEach(function (pid) {
+          var b = el("button");
+          b.type = "button";
+          b.setAttribute("aria-label", "Open photo");
+          var img = document.createElement("img");
+          img.src = window.hkBlobBase + pid;
+          img.alt = "Photo from " + m.from;
+          img.loading = "lazy";
+          b.appendChild(img);
+          b.addEventListener("click", function () { openLb(m.id, pid); });
+          ph.appendChild(b);
+        });
+        bubble.appendChild(ph);
+      }
+      if (m.voice) {
+        var au = document.createElement("audio");
+        au.controls = true; au.preload = "metadata"; au.src = window.hkBlobBase + m.voice;
+        bubble.appendChild(au);
+      }
+      m.vids.forEach(function (vid) {
+        var v = document.createElement("video");
+        v.className = "chatvid"; v.controls = true; v.preload = "metadata"; v.playsInline = true;
+        v.src = window.hkBlobBase + vid + "#t=0.1";
+        bubble.appendChild(v);
+      });
+      var col = el("div", "col");
+      col.appendChild(bubble);
+      var meta = el("div", "meta");
+      meta.appendChild(el("span", null, (m.from === "Aaru" ? "Butki" : m.from) + " · " + d.toLocaleTimeString("en-US", { timeZone: "Asia/Kathmandu", hour: "numeric", minute: "2-digit" })));
+      if (m.from === window.hkMe) meta.appendChild(el("span", "tick" + (m.seen ? " seen" : ""), m.seen ? "\u2713\u2713 Seen" : "\u2713"));
+      var rp = el("button", "del", "Reply");
+      rp.type = "button";
+      rp.addEventListener("click", function () { setReply(m); });
+      meta.appendChild(rp);
+      var del = el("button", "del", "Delete");
+      del.type = "button";
+      del.addEventListener("click", function () {
+        window.hkConfirmPin("Message delete garna PIN halnus").then(function (ok) { if (ok) removeMsg(m.id); });
+      });
+      if (m.text && window.hkMe === m.from) {
+        var ed = el("button", "del", "Edit");
+        ed.type = "button";
+        ed.addEventListener("click", function () { openEdit(m); });
+        meta.appendChild(ed);
+      }
+      meta.appendChild(del);
+      col.appendChild(meta);
+      wrap.appendChild(col);
+      chatEl.appendChild(wrap);
+    });
+    if (loaded && msgs.length && (stickNext || nearBottom) && !$("tab-chat").hidden) {
+      stickNext = false;
+      window.scrollTo(0, document.documentElement.scrollHeight);
+      setTimeout(function () { window.scrollTo(0, document.documentElement.scrollHeight); }, 350);
+    }
+    $("send").disabled = !col || busy;
+    $("bulkBtn").disabled = !col || busy;
+  }
+
+  function ingest(snap) {
+    msgs = snap.docs.map(function (d) {
+      var x = d.data() || {};
+      return { id: d.id, from: x.from === "Jash" ? "Jash" : "Aaru", text: String(x.text || ""), at: Number(x.at) || 0, photos: Array.isArray(x.photos) ? x.photos.filter(function (s) { return typeof s === "string"; }) : [], voice: typeof x.voice === "string" ? x.voice : "", vids: Array.isArray(x.vids) ? x.vids.filter(function (s) { return typeof s === "string"; }) : [], seen: Number(x.seen) || 0, reply: (x.reply && typeof x.reply === "object") ? { id: String(x.reply.id || ""), from: x.reply.from === "Jash" ? "Jash" : "Aaru", text: String(x.reply.text || "") } : null };
+    });
+    byId = {};
+    msgs.forEach(function (m) { byId[m.id] = m; });
+    var fresh = [];
+    if (knownIds) msgs.forEach(function (m) { if (!knownIds[m.id] && m.from !== window.hkMe && m.at > Date.now() - 600000) fresh.push(m); });
+    knownIds = {};
+    msgs.forEach(function (m) { knownIds[m.id] = 1; });
+    loaded = true;
+    render();
+    fresh.slice(-3).forEach(notify);
+    markSeen();
+  }
+
+  function shrink(file) {
+    return new Promise(function (res, rej) {
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () {
+        var w = img.naturalWidth, h = img.naturalHeight, s = Math.min(1, 1600 / Math.max(w, h));
+        var c = document.createElement("canvas");
+        c.width = Math.max(1, Math.round(w * s)); c.height = Math.max(1, Math.round(h * s));
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        c.toBlob(function (b) { b ? res(b) : rej(new Error("encode")); }, "image/jpeg", 0.85);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); rej(new Error("read")); };
+      img.src = url;
+    });
+  }
+
+  function uploadAll(list) {
+    var ph = [], vd = [];
+    return list.reduce(function (p, f, i) {
+      return p.then(function () {
+        say("Upload hudai chha (" + (i + 1) + "/" + list.length + ")");
+        if (f.type && f.type.indexOf("video/") === 0) {
+          if (f.size > 20 * 1024 * 1024) throw { code: "video 20 MB bhanda thulo" };
+          return assets.upload(f, { type: f.type }).then(function (r) { vd.push(r.id); });
+        }
+        return shrink(f).then(function (b) { return assets.upload(b, { type: "image/jpeg" }); }).then(function (r) { ph.push(r.id); });
+      });
+    }, Promise.resolve()).then(function () { return { photos: ph, vids: vd }; });
+  }
+
+  $("send").addEventListener("click", function () {
+    var text = $("text").value.trim();
+    if (!col || busy) return;
+    if (recording) { finishRec(true); return; }
+    if (!text && !files.length) { if (canRec) startRec(); else $("text").focus(); return; }
+    if (files.length && !assets) { say("Photo halna login hunuparchha.", true); return; }
+    busy = true; render();
+    var at = chosenTime();
+    var list = files.slice();
+    (list.length ? uploadAll(list) : Promise.resolve({ photos: [], vids: [] })).then(function (up) {
+      return col.add({ from: who, text: text, photos: up.photos, vids: up.vids, at: at, reply: replyTo });
+    }).then(function () {
+      $("text").value = ""; files = []; $("picked").textContent = ""; autoGrow(); updateBar(); stickNext = true; clearReply(); $("plusPanel").hidden = true; $("emojiTray").hidden = true;
+      whenTouched = false; $("when").value = localInputValue(new Date());
+      say("Save bhayo.");
+    }).catch(function (e) {
+      say("Save bhayena. Feri try garnus. (" + ((e && e.code) || "error") + ")", true);
+    }).then(function () { busy = false; render(); });
+  });
+
+  $("bulkBtn").addEventListener("click", function () {
+    var raw = $("bulk").value;
+    if (!col || busy || !raw.trim()) return;
+    var out = [], re = /^\s*(Aaru|Butki|Jash)\s*[:\-]\s*(.*)$/i;
+    raw.split(/\r?\n/).forEach(function (line) {
+      var m = re.exec(line);
+      if (m) out.push({ from: m[1].toLowerCase() === "jash" ? "Jash" : "Aaru", text: m[2] });
+      else if (out.length && line.trim()) out[out.length - 1].text += "\n" + line.trim();
+    });
+    if (!out.length) { say("Kunai line 'Butki: ...' ya 'Jash: ...' format ma bhetiyena.", true); return; }
+    if (out.length > 300) { say("Ek choti ma 300 bhanda badhi message hunna. Chhoto-chhoto bhaag ma paste garnus.", true); return; }
+    busy = true; render();
+    var base = chosenTime();
+    out.reduce(function (p, m, i) {
+      return p.then(function () {
+        say("Save hudai chha (" + (i + 1) + "/" + out.length + ")");
+        return col.add({ from: m.from, text: m.text.trim(), photos: [], at: base + i * 1000 });
+      });
+    }, Promise.resolve()).then(function () {
+      $("bulk").value = "";
+      say(out.length + " ota message save bhayo.");
+    }).catch(function (e) {
+      say("Kehi message save bhayena. (" + ((e && e.code) || "error") + ")", true);
+    }).then(function () { busy = false; render(); });
+  });
+
+  function closeEdit() { $("editask").hidden = true; editing = null; }
+  function openEdit(m) { editing = m.id; $("editText").value = m.text; $("editask").hidden = false; $("editText").focus(); }
+  $("editCancel").addEventListener("click", closeEdit);
+  $("editOk").addEventListener("click", function () {
+    var id = editing, t = $("editText").value.trim();
+    if (!id || !col) return;
+    var hasPhotos = ((byId[id] && byId[id].photos) || []).length > 0;
+    closeEdit();
+    if (!t && !hasPhotos) { say("Khali message save hudaina.", true); return; }
+    queue(id, function () { return col.doc(id).update({ text: t }).then(function () { say("Edit save bhayo."); }); });
+  });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && editing) closeEdit(); });
+
+  function removeMsg(id) {
+    if (!col) return;
+    var photos = ((byId[id] && byId[id].photos) || []).concat(byId[id] && byId[id].voice ? [byId[id].voice] : [], (byId[id] && byId[id].vids) || []);
+    queue(id, function () {
+      return col.doc(id).delete().then(function () {
+        if (assets) photos.forEach(function (pid) { assets.delete(pid).catch(function () {}); });
+      });
+    });
+  }
+
+  function openLb(msgId, photoId) {
+    lbState = { msgId: msgId, photoId: photoId, armed: false };
+    $("lbImg").src = window.hkBlobBase + photoId;
+    $("lbDel").hidden = !assets;
+    $("lbDel").textContent = "Remove photo";
+    $("lb").hidden = false;
+    $("lbClose").focus();
+  }
+  function closeLb() { $("lb").hidden = true; $("lbImg").removeAttribute("src"); lbState = null; }
+  $("lbClose").addEventListener("click", closeLb);
+  $("lb").addEventListener("click", function (e) { if (e.target === $("lb")) closeLb(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && lbState) closeLb(); });
+  $("lbDel").addEventListener("click", function () {
+    if (!lbState) return;
+    if (!lbState.pinned) {
+      window.hkConfirmPin("Photo hataunu ko lagi PIN halnus").then(function (ok) { if (ok && lbState) { lbState.pinned = true; $("lbDel").click(); } });
+      return;
+    }
+    var s = lbState;
+    closeLb();
+    queue(s.msgId, function () {
+      var cur = (byId[s.msgId] && byId[s.msgId].photos) || [];
+      return col.doc(s.msgId).update({ photos: cur.filter(function (x) { return x !== s.photoId; }) }).then(function () {
+        if (assets) return assets.delete(s.photoId).catch(function () {});
+      });
+    });
+  });
+
+  function applyMe() {
+    if (!window.hkMe) return;
+    setWho(window.hkMe);
+    $("whoBox").hidden = true;
+    $("meLine").textContent = "Tapai: " + (window.hkMe === "Aaru" ? "Butki" : "Jash");
+  }
+  document.addEventListener("hk-login", applyMe);
+  applyMe();
+
+  render();
+  var timer = setTimeout(function () { if (!loaded) say("Load hudai chha. Internet herna, ani feri kholnus.", true); }, 10000);
+  (async function () {
+    try {
+      var c = window.claude && window.claude.use ? window.claude : null;
+      var db = c ? await c.use("db") : null;
+      assets = c ? await c.use("assets") : null;
+      $("photoLabel").hidden = !assets; $("camLabel").hidden = !assets;
+      if (!db) {
+        clearTimeout(timer); loaded = true;
+        say("Save garna login hunuparchha. Supabase setup pura bhayo ki herna.", true);
+        render();
+        return;
+      }
+      col = db.collection("chat");
+      if (window.hkTyping) window.hkTyping.start(onTyping);
+      col.orderBy("at", "asc").onSnapshot(function (snap) {
+        if (!snap.metadata.fromCache) clearTimeout(timer);
+        ingest(snap);
+      }, function (e) {
+        clearTimeout(timer); loaded = true;
+        say("Chat load bhayena. (" + ((e && e.code) || "error") + ")", true);
+        render();
+      });
+      render();
+    } catch (e) {
+      clearTimeout(timer); loaded = true;
+      say("Page ma problem aayo. Feri kholnus.", true);
+      render();
+    }
+  })();
+})();
+</script>
+
+<script>
+(function () {
+  var tabs = [["t-chat", "tab-chat"], ["t-vid", "tab-videos"], ["t-links", "tab-links"], ["t-album", "tab-album"], ["t-songs", "tab-songs"], ["t-clips", "tab-clips"], ["t-din", "tab-din"]];
+  function show(i) {
+    tabs.forEach(function (x, k) {
+      document.getElementById(x[1]).hidden = k !== i;
+      document.getElementById(x[0]).setAttribute("aria-selected", k === i ? "true" : "false");
+    });
+    if (i !== 1) document.dispatchEvent(new Event("pv-lock")); // leaving the videos tab locks it again
+  }
+  tabs.forEach(function (x, k) { document.getElementById(x[0]).addEventListener("click", function () { show(k); }); });
+})();
+</script>
+<script>
+
+(function () {
+  var PIN_HASH = "164e9fa946118344cd26fb85601fa4e218dcd44758d0725762d86671cd9aa2ec";
+  var MAX = 20 * 1024 * 1024;
+  var entered = "";
+  var unlocked = false;
+  var videos = [];
+  var byId = {};
+  var col = null, assets = null, db = null;
+  var unsub = null;
+  var loaded = false, busy = false;
+  var picked = null;
+  var chain = {};
+  var cards = {};
+  var views = [];
+  var viewsBy = {};
+  var vcol = null, user = null, myId = null, unsubV = null;
+  var lastLogged = {};
+
+  var $ = function (id) { return document.getElementById(id); };
+  function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+  function say(msg, isErr) { var s = $("pv-status"); s.textContent = msg || ""; s.className = "status" + (isErr ? " err" : ""); }
+  function lockSay(msg, isErr) { var s = $("pv-lockStatus"); s.textContent = msg || ""; s.className = "status" + (isErr ? " err" : ""); }
+  function queue(id, fn) {
+    var p = (chain[id] || Promise.resolve()).then(fn).catch(function (e) { say("Save bhayena. Feri try garnus. (" + ((e && e.code) || "error") + ")", true); });
+    chain[id] = p;
+    return p;
+  }
+
+  // PIN pad
+  var pad = $("pv-pad");
+  ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "<"].forEach(function (k) {
+    var b = el("button", k === "" ? "blank" : (k === "<" ? "back" : ""), k === "<" ? "⌫" : k);
+    b.type = "button";
+    if (k === "") { b.tabIndex = -1; b.setAttribute("aria-hidden", "true"); }
+    else if (k === "<") { b.setAttribute("aria-label", "Delete last digit"); b.addEventListener("click", back); }
+    else { b.setAttribute("aria-label", k); b.addEventListener("click", function () { press(k); }); }
+    pad.appendChild(b);
+  });
+  function dots() {
+    var d = $("pv-dots").children;
+    for (var i = 0; i < d.length; i++) d[i].className = i < entered.length ? "on" : "";
+  }
+  function back() { entered = entered.slice(0, -1); dots(); }
+  function press(k) {
+    if (unlocked || entered.length >= 4) return;
+    entered += k;
+    dots();
+    if (entered.length === 4) {
+      var tryPin = entered; entered = ""; dots();
+      window.hkSha("hkpin:" + tryPin).then(function (h) {
+        if (h === PIN_HASH) { lockSay(""); unlock(); }
+        else { lockSay("PIN galat chha. Feri try garnus.", true); }
+      });
+    }
+  }
+  document.addEventListener("keydown", function (e) {
+    if (unlocked || $("tab-videos").hidden) return;
+    var tg = e.target && e.target.tagName;
+    if (tg === "INPUT" || tg === "TEXTAREA") return;
+    if (/^[0-9]$/.test(e.key)) press(e.key);
+    else if (e.key === "Backspace") back();
+  });
+
+  function unlock() {
+    unlocked = true;
+    $("pv-lock").hidden = true;
+    $("pv-vault").hidden = false;
+    $("pv-count").textContent = "Loading";
+    connect();
+  }
+  function lockAgain() {
+    unlocked = false;
+    if (unsub) { unsub(); unsub = null; }
+    if (unsubV) { unsubV(); unsubV = null; }
+    videos = []; byId = {}; loaded = false; views = []; viewsBy = {}; cards = {}; vcol = null;
+    $("pv-list").textContent = "";
+    $("pv-vault").hidden = true;
+    $("pv-lock").hidden = false;
+    $("pv-count").textContent = "Locked";
+    say(""); lockSay("");
+    entered = ""; dots();
+  }
+  $("pv-relock").addEventListener("click", lockAgain);
+
+  function nepal(ts) {
+    return new Date(ts).toLocaleString("en-US", { timeZone: "Asia/Kathmandu", day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" });
+  }
+
+  function makeCard(v) {
+    var card = el("div", "card");
+    var vid = document.createElement("video");
+    vid.controls = true;
+    vid.playsInline = true;
+    vid.preload = "metadata";
+    vid.src = window.hkBlobBase + v.asset + "#t=0.1";
+    vid.addEventListener("play", function () { logView(v.id); });
+    card.appendChild(vid);
+    card._vid = vid;
+    card._h = el("h2");
+    card.appendChild(card._h);
+    card._stat = el("p", "stat");
+    card.appendChild(card._stat);
+    var det = document.createElement("details");
+    det.className = "hist";
+    card._sum = document.createElement("summary");
+    card._sum.textContent = "Herne itihas";
+    card._ul = el("ul", "histlist");
+    det.appendChild(card._sum);
+    det.appendChild(card._ul);
+    card.appendChild(det);
+    var row = el("div", "row");
+    card._when = el("span", "when");
+    row.appendChild(card._when);
+    var del = el("button", "btn quiet", "Delete");
+    del.type = "button";
+    del.addEventListener("click", function () {
+      window.hkConfirmPin("Video delete garna PIN halnus").then(function (ok) { if (ok) removeVideo(v.id); });
+    });
+    row.appendChild(del);
+    card.appendChild(row);
+    return card;
+  }
+
+  // Cards are kept between renders so a playing video is never rebuilt when views or titles change.
+  function render() {
+    if (!unlocked) return;
+    $("pv-count").textContent = loaded ? (videos.length ? videos.length + (videos.length === 1 ? " video" : " videos") : "No videos yet") : "Loading";
+    $("pv-empty").hidden = !(loaded && videos.length === 0);
+    $("pv-add").hidden = !assets;
+    $("pv-save").disabled = !col || busy;
+    var list = $("pv-list"), seen = {};
+    videos.forEach(function (v, i) {
+      seen[v.id] = true;
+      var card = cards[v.id] || (cards[v.id] = makeCard(v));
+      card._h.textContent = v.title;
+      card._h.hidden = !v.title;
+      card._vid.setAttribute("aria-label", v.title || "Video");
+      card._when.textContent = new Date(v.at).toLocaleDateString("en-US", { timeZone: "Asia/Kathmandu", day: "numeric", month: "short", year: "numeric" });
+      if (list.children[i] !== card) list.insertBefore(card, list.children[i] || null);
+    });
+    Object.keys(cards).forEach(function (id) { if (!seen[id]) { cards[id].remove(); delete cards[id]; } });
+    renderStats();
+  }
+
+  var statTok = 0;
+  async function renderStats() {
+    var tok = ++statTok;
+    var idSet = {};
+    views.forEach(function (x) { if (x.by) idSet[x.by] = true; });
+    var ids = Object.keys(idSet), ps = {};
+    if (user && ids.length) { try { ps = await user.profiles(ids); } catch (e) {} }
+    if (tok !== statTok || !unlocked) return;
+    videos.forEach(function (v) {
+      var card = cards[v.id];
+      if (!card) return;
+      var list = viewsBy[v.id] || [];
+      card._stat.textContent = list.length
+        ? "Herieko: " + list.length + " choti. Aakhiri: " + nepal(list[0].at) + " (Nepal time)"
+        : "Abhi samma kasaile herenan.";
+      card._ul.textContent = "";
+      list.slice(0, 20).forEach(function (x) {
+        var who = x.by === "Aaru" ? "Butki" : x.by === "Jash" ? "Jash" : "Naam dekhiyena";
+        card._ul.appendChild(el("li", null, nepal(x.at) + " · " + who));
+      });
+      card._sum.textContent = list.length > 20 ? "Herne itihas (pachhillo 20)" : "Herne itihas";
+    });
+  }
+
+  function logView(id) {
+    if (!vcol) return;
+    var now = Date.now();
+    if (lastLogged[id] && now - lastLogged[id] < 300000) return; // one entry per 5 minutes per video
+    lastLogged[id] = now;
+    vcol.add({ video: id, at: now, by: window.hkMe || "" }).catch(function () {});
+  }
+
+  function ingestViews(snap) {
+    views = snap.docs.map(function (d) {
+      var x = d.data() || {};
+      return { id: d.id, video: String(x.video || ""), at: Number(x.at) || 0, by: typeof x.by === "string" ? x.by : "" };
+    });
+    viewsBy = {};
+    views.forEach(function (x) { (viewsBy[x.video] = viewsBy[x.video] || []).push(x); });
+    renderStats();
+  }
+
+  function ingest(snap) {
+    videos = snap.docs.map(function (d) {
+      var x = d.data() || {};
+      return { id: d.id, title: String(x.title || ""), asset: String(x.asset || ""), at: Number(x.at) || 0 };
+    }).filter(function (v) { return v.asset; });
+    byId = {};
+    videos.forEach(function (v) { byId[v.id] = v; });
+    loaded = true;
+    render();
+  }
+
+  function removeVideo(id) {
+    if (!col) return;
+    var asset = byId[id] && byId[id].asset;
+    var vs = (viewsBy[id] || []).slice();
+    queue(id, function () {
+      return col.doc(id).delete().then(function () {
+        if (assets && asset) assets.delete(asset).catch(function () {});
+        return vs.reduce(function (p, x) { return p.then(function () { return vcol.doc(x.id).delete().catch(function () {}); }); }, Promise.resolve());
+      });
+    });
+  }
+
+  $("pv-file").addEventListener("change", function () {
+    var f = $("pv-file").files && $("pv-file").files[0];
+    $("pv-file").value = "";
+    if (!f) return;
+    if (f.type.indexOf("video/") !== 0 && !/\.(mp4|mov|m4v|webm|3gp)$/i.test(f.name)) { picked = null; $("pv-picked").textContent = ""; say("Yo video file hoina jasto lagyo.", true); return; }
+    if (f.size > MAX) { picked = null; $("pv-picked").textContent = ""; say("Yo video 20 MB bhanda thulo chha (" + Math.round(f.size / 1048576) + " MB). Chhoto banaunus.", true); return; }
+    picked = f;
+    $("pv-picked").textContent = f.name + " (" + (f.size / 1048576).toFixed(1) + " MB)";
+    say("");
+  });
+
+  $("pv-save").addEventListener("click", function () {
+    if (!col || !assets || busy) return;
+    if (!picked) { say("Pahila video chhannus.", true); return; }
+    busy = true; render();
+    var f = picked, title = $("pv-title").value.trim();
+    say("Video upload hudai chha. Kehi samay lagchha, page band nagarnus.");
+    assets.upload(f, { type: f.type || "video/mp4" }).then(function (r) {
+      return col.add({ title: title, asset: r.id, at: Date.now() });
+    }).then(function () {
+      picked = null; $("pv-picked").textContent = ""; $("pv-title").value = "";
+      say("Video save bhayo.");
+    }).catch(function (e) {
+      var c = e && e.code;
+      say(c === "too_large" ? "Video dherai thulo chha." : c === "quota_or_state" ? "Storage bhari bhayo. Purano video hataunus." : "Video save bhayena. Feri try garnus. (" + (c || "error") + ")", true);
+    }).then(function () { busy = false; render(); });
+  });
+
+  var timer = null;
+  async function connect() {
+    try {
+      var c = window.claude && window.claude.use ? window.claude : null;
+      db = db || (c ? await c.use("db") : null);
+      assets = assets || (c ? await c.use("assets") : null);
+      user = user || (c ? await c.use("user") : null);
+      if (user && myId === null) { try { myId = await user.id(); } catch (e) { myId = null; } }
+      if (!unlocked) return;
+      if (!db) { loaded = true; say("Save garna login hunuparchha. Supabase setup pura bhayo ki herna.", true); render(); return; }
+      col = db.collection("videos");
+      vcol = db.collection("views");
+      timer = setTimeout(function () { if (!loaded) say("Load hudai chha. Internet herna, ani feri kholnus.", true); }, 10000);
+      unsub = col.orderBy("at", "desc").onSnapshot(function (snap) {
+        if (!snap.metadata.fromCache) clearTimeout(timer);
+        ingest(snap);
+      }, function (e) {
+        clearTimeout(timer); loaded = true;
+        say("Video load bhayena. (" + ((e && e.code) || "error") + ")", true);
+        render();
+      });
+      unsubV = vcol.orderBy("at", "desc").limit(1000).onSnapshot(ingestViews, function () {});
+      render();
+    } catch (e) {
+      loaded = true; say("Page ma problem aayo. Feri kholnus.", true); render();
+    }
+  }
+
+  document.addEventListener("pv-lock", lockAgain);
+  dots();
+})();
+</script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var links = [], byId = {}, lviews = {}, cards = {};
+  var col = null, vcol = null, loaded = false, busy = false, started = false;
+  var lastLogged = {}, chain = {};
+
+  function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+  function say(msg, isErr) { var s = $("ln-status"); s.textContent = msg || ""; s.className = "status" + (isErr ? " err" : ""); }
+  function queue(id, fn) {
+    var p = (chain[id] || Promise.resolve()).then(fn).catch(function (e) { say("Save bhayena. Feri try garnus. (" + ((e && e.code) || "error") + ")", true); });
+    chain[id] = p;
+    return p;
+  }
+  function nepal(ts) {
+    return new Date(ts).toLocaleString("en-US", { timeZone: "Asia/Kathmandu", day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" });
+  }
+  function platformOf(u) {
+    var h = u.hostname.replace(/^www\./, "").replace(/^m\./, "").toLowerCase();
+    if (h === "youtu.be" || h === "youtube.com" || h.slice(-12) === ".youtube.com") return "YouTube";
+    if (h === "tiktok.com" || h.slice(-11) === ".tiktok.com") return "TikTok";
+    return h;
+  }
+  function parseUrl(s) {
+    try { var u = new URL(s.trim()); return u.protocol === "https:" ? u : null; } catch (e) { return null; }
+  }
+
+  function makeCard(l) {
+    var card = el("div", "card");
+    card._badge = el("span", "badge");
+    card.appendChild(card._badge);
+    card._h = el("h2");
+    card.appendChild(card._h);
+    var a = document.createElement("a");
+    a.className = "btn open";
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.textContent = "Kholnus";
+    a.addEventListener("click", function () { logOpen(l.id); });
+    card._a = a;
+    card.appendChild(a);
+    card._stat = el("p", "stat");
+    card.appendChild(card._stat);
+    var det = document.createElement("details");
+    det.className = "hist";
+    card._sum = document.createElement("summary");
+    card._sum.textContent = "Herne itihas";
+    card._ul = el("ul", "histlist");
+    det.appendChild(card._sum);
+    det.appendChild(card._ul);
+    card.appendChild(det);
+    var row = el("div", "row");
+    card._when = el("span", "when");
+    row.appendChild(card._when);
+    var del = el("button", "btn quiet", "Delete");
+    del.type = "button";
+    del.addEventListener("click", function () {
+      window.hkConfirmPin("Link delete garna PIN halnus").then(function (ok) { if (ok) removeLink(l.id); });
+    });
+    row.appendChild(del);
+    card.appendChild(row);
+    return card;
+  }
+
+  function render() {
+    $("ln-count").textContent = loaded ? (links.length ? links.length + (links.length === 1 ? " link" : " links") : "No links yet") : "Loading";
+    $("ln-empty").hidden = !(loaded && links.length === 0);
+    $("ln-save").disabled = !col || busy;
+    var list = $("ln-list"), seen = {};
+    links.forEach(function (l, i) {
+      seen[l.id] = true;
+      var card = cards[l.id] || (cards[l.id] = makeCard(l));
+      card._badge.textContent = l.platform;
+      card._badge.className = "badge" + (l.platform === "YouTube" ? " yt" : l.platform === "TikTok" ? " tt" : "");
+      card._h.textContent = l.title || l.url;
+      card._h.hidden = false;
+      card._a.href = l.url;
+      card._when.textContent = new Date(l.at).toLocaleDateString("en-US", { timeZone: "Asia/Kathmandu", day: "numeric", month: "short", year: "numeric" });
+      if (list.children[i] !== card) list.insertBefore(card, list.children[i] || null);
+    });
+    Object.keys(cards).forEach(function (id) { if (!seen[id]) { cards[id].remove(); delete cards[id]; } });
+    renderStats();
+  }
+
+  function renderStats() {
+    links.forEach(function (l) {
+      var card = cards[l.id];
+      if (!card) return;
+      var list = lviews[l.id] || [];
+      card._stat.textContent = list.length
+        ? "Kholeko: " + list.length + " choti. Aakhiri: " + nepal(list[0].at) + " (Nepal time)"
+        : "Abhi samma kasaile kholeko chhaina.";
+      card._ul.textContent = "";
+      list.slice(0, 20).forEach(function (x) {
+        var who = x.by === "Aaru" ? "Butki" : x.by === "Jash" ? "Jash" : "Naam dekhiyena";
+        card._ul.appendChild(el("li", null, nepal(x.at) + " · " + who));
+      });
+      card._sum.textContent = list.length > 20 ? "Herne itihas (pachhillo 20)" : "Herne itihas";
+    });
+  }
+
+  function logOpen(id) {
+    if (!vcol) return;
+    var now = Date.now();
+    if (lastLogged[id] && now - lastLogged[id] < 60000) return;
+    lastLogged[id] = now;
+    vcol.add({ link: id, at: now, by: window.hkMe || "" }).catch(function () {});
+  }
+
+  function ingest(snap) {
+    links = snap.docs.map(function (d) {
+      var x = d.data() || {};
+      return { id: d.id, title: String(x.title || ""), url: String(x.url || ""), platform: String(x.platform || ""), at: Number(x.at) || 0 };
+    }).filter(function (l) { return parseUrl(l.url); });
+    byId = {};
+    links.forEach(function (l) { byId[l.id] = l; });
+    loaded = true;
+    say("");
+    render();
+  }
+  function ingestViews(snap) {
+    lviews = {};
+    snap.docs.forEach(function (d) {
+      var x = d.data() || {};
+      var r = { id: d.id, link: String(x.link || ""), at: Number(x.at) || 0, by: typeof x.by === "string" ? x.by : "" };
+      (lviews[r.link] = lviews[r.link] || []).push(r);
+    });
+    renderStats();
+  }
+
+  function removeLink(id) {
+    if (!col) return;
+    var vs = (lviews[id] || []).slice();
+    queue(id, function () {
+      return col.doc(id).delete().then(function () {
+        return vs.reduce(function (p, x) { return p.then(function () { return vcol.doc(x.id).delete().catch(function () {}); }); }, Promise.resolve());
+      });
+    });
+  }
+
+  $("ln-save").addEventListener("click", function () {
+    if (!col || busy) return;
+    var u = parseUrl($("ln-url").value);
+    if (!u) { say("Link https:// bata suru hunuparchha. YouTube ya TikTok ko link paste garnus.", true); return; }
+    busy = true; render();
+    col.add({ title: $("ln-title").value.trim(), url: u.href, platform: platformOf(u), at: Date.now(), by: window.hkMe || "" })
+      .then(function () { $("ln-title").value = ""; $("ln-url").value = ""; say("Link save bhayo."); })
+      .catch(function (e) { say("Save bhayena. (" + ((e && e.code) || "error") + ")", true); })
+      .then(function () { busy = false; render(); });
+  });
+
+  async function start() {
+    if (started) return;
+    started = true;
+    try {
+      var c = window.claude && window.claude.use ? window.claude : null;
+      var db = c ? await c.use("db") : null;
+      if (!db) { loaded = true; say("Save garna login hunuparchha. Supabase setup pura bhayo ki herna.", true); render(); return; }
+      col = db.collection("links");
+      vcol = db.collection("linkviews");
+      col.orderBy("at", "desc").onSnapshot(ingest, function (e) {
+        loaded = true; say("Link load bhayena. (" + ((e && e.code) || "error") + ")", true); render();
+      });
+      vcol.orderBy("at", "desc").limit(1000).onSnapshot(ingestViews, function () {});
+      render();
+    } catch (e) { loaded = true; say("Page ma problem aayo. Feri kholnus.", true); render(); }
+  }
+
+  render();
+  if (window.hkMe) start();
+  document.addEventListener("hk-login", start);
+})();
+</script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var photos = [], byId = {};
+  var col = null, assets = null;
+  var loaded = false, busy = false, started = false;
+  var files = [];
+  var cur = -1;
+  var chain = {};
+
+  function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+  function say(msg, isErr) { var s = $("al-status"); s.textContent = msg || ""; s.className = "status" + (isErr ? " err" : ""); }
+  function queue(id, fn) {
+    var p = (chain[id] || Promise.resolve()).then(fn).catch(function (e) { say("Save bhayena. Feri try garnus. (" + ((e && e.code) || "error") + ")", true); });
+    chain[id] = p;
+    return p;
+  }
+  function nepal(ts) {
+    return new Date(ts).toLocaleString("en-US", { timeZone: "Asia/Kathmandu", day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" });
+  }
+  function nameOf(by) { return by === "Aaru" ? "Butki" : by === "Jash" ? "Jash" : ""; }
+
+  function render() {
+    $("al-count").textContent = loaded ? (photos.length ? photos.length + (photos.length === 1 ? " photo" : " photos") : "No photos yet") : "Loading";
+    $("al-empty").hidden = !(loaded && photos.length === 0);
+    $("al-add").hidden = !assets;
+    $("al-save").disabled = !col || busy;
+    var grid = $("al-grid");
+    grid.textContent = "";
+    photos.forEach(function (p, i) {
+      var b = el("button", "tile");
+      b.type = "button";
+      b.setAttribute("aria-label", p.caption ? "Open photo: " + p.caption : "Open photo");
+      var img = document.createElement("img");
+      img.src = window.hkBlobBase + p.asset;
+      img.alt = p.caption || "Album photo";
+      img.loading = "lazy";
+      b.appendChild(img);
+      if (p.caption) b.appendChild(el("span", "cap", p.caption));
+      b.addEventListener("click", function () { openAt(i); });
+      grid.appendChild(b);
+    });
+  }
+
+  function ingest(snap) {
+    photos = snap.docs.map(function (d) {
+      var x = d.data() || {};
+      return { id: d.id, asset: String(x.asset || ""), caption: String(x.caption || ""), at: Number(x.at) || 0, by: typeof x.by === "string" ? x.by : "" };
+    }).filter(function (p) { return p.asset; });
+    photos.sort(function (a, b) { return b.at - a.at; });
+    byId = {};
+    photos.forEach(function (p) { byId[p.id] = p; });
+    loaded = true;
+    render();
+    if (!$("al-lb").hidden) { if (cur >= photos.length) cur = photos.length - 1; if (cur < 0) closeLb(); else showCur(); }
+  }
+
+  // Viewer
+  function showCur() {
+    var p = photos[cur];
+    if (!p) return;
+    $("al-lbImg").src = window.hkBlobBase + p.asset;
+    $("al-lbImg").alt = p.caption || "Album photo";
+    $("al-lbCap").textContent = p.caption;
+    $("al-lbCap").hidden = !p.caption;
+    var who = nameOf(p.by);
+    $("al-lbMeta").textContent = (who ? who + " · " : "") + nepal(p.at) + " (Nepal time)";
+    $("al-prev").disabled = cur <= 0;
+    $("al-next").disabled = cur >= photos.length - 1;
+    $("al-del").hidden = !col;
+  }
+  function openAt(i) { cur = i; $("al-lb").hidden = false; showCur(); $("al-close").focus(); }
+  function closeLb() { $("al-lb").hidden = true; $("al-lbImg").removeAttribute("src"); cur = -1; }
+  $("al-close").addEventListener("click", closeLb);
+  $("al-lb").addEventListener("click", function (e) { if (e.target === $("al-lb")) closeLb(); });
+  $("al-prev").addEventListener("click", function () { if (cur > 0) { cur--; showCur(); } });
+  $("al-next").addEventListener("click", function () { if (cur < photos.length - 1) { cur++; showCur(); } });
+  document.addEventListener("keydown", function (e) {
+    if ($("al-lb").hidden) return;
+    if (e.key === "Escape") closeLb();
+    else if (e.key === "ArrowLeft" && cur > 0) { cur--; showCur(); }
+    else if (e.key === "ArrowRight" && cur < photos.length - 1) { cur++; showCur(); }
+  });
+  $("al-del").addEventListener("click", function () {
+    var p = photos[cur];
+    if (!p || !col) return;
+    window.hkConfirmPin("Photo delete garna PIN halnus").then(function (ok) {
+      if (!ok) return;
+      var id = p.id, asset = p.asset;
+      queue(id, function () {
+        return col.doc(id).delete().then(function () {
+          if (assets && asset) assets.delete(asset).catch(function () {});
+        });
+      });
+    });
+  });
+
+  // Upload
+  function shrink(file) {
+    return new Promise(function (res, rej) {
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () {
+        var w = img.naturalWidth, h = img.naturalHeight, s = Math.min(1, 1800 / Math.max(w, h));
+        var c = document.createElement("canvas");
+        c.width = Math.max(1, Math.round(w * s)); c.height = Math.max(1, Math.round(h * s));
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        c.toBlob(function (b) { b ? res(b) : rej(new Error("encode")); }, "image/jpeg", 0.85);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); rej(new Error("read")); };
+      img.src = url;
+    });
+  }
+  $("al-file").addEventListener("change", function () {
+    Array.prototype.slice.call($("al-file").files).forEach(function (f) { files.push(f); });
+    $("al-file").value = "";
+    $("al-picked").textContent = files.length ? files.length + " photo chhaneko" : "";
+  });
+  $("al-save").addEventListener("click", function () {
+    if (!col || !assets || busy) return;
+    if (!files.length) { say("Pahila photo chhannus.", true); return; }
+    busy = true; render();
+    var list = files.slice(), caption = $("al-cap").value.trim(), done = 0, failed = 0;
+    var base = Date.now();
+    list.reduce(function (p, f, i) {
+      return p.then(function () {
+        say("Photo upload hudai chha (" + (i + 1) + "/" + list.length + ")");
+        return shrink(f).then(function (b) { return assets.upload(b, { type: "image/jpeg" }); }).then(function (r) {
+          return col.add({ asset: r.id, caption: caption, at: base + i, by: window.hkMe || "" });
+        }).then(function () { done++; }).catch(function () { failed++; });
+      });
+    }, Promise.resolve()).then(function () {
+      files = []; $("al-picked").textContent = ""; $("al-cap").value = "";
+      if (failed) say(done + " ota save bhayo, " + failed + " ota bhayena. Feri try garnus.", true);
+      else say(done + " ota photo save bhayo.");
+    }).then(function () { busy = false; render(); });
+  });
+
+  async function start() {
+    if (started) return;
+    started = true;
+    try {
+      var c = window.claude && window.claude.use ? window.claude : null;
+      var db = c ? await c.use("db") : null;
+      assets = c ? await c.use("assets") : null;
+      if (!db) { loaded = true; say("Save garna login hunuparchha. Supabase setup pura bhayo ki herna.", true); render(); return; }
+      col = db.collection("album");
+      col.orderBy("at", "desc").onSnapshot(ingest, function (e) {
+        loaded = true; say("Album load bhayena. (" + ((e && e.code) || "error") + ")", true); render();
+      });
+      render();
+    } catch (e) { loaded = true; say("Page ma problem aayo. Feri kholnus.", true); render(); }
+  }
+
+  render();
+  if (window.hkMe) start();
+  document.addEventListener("hk-login", start);
+})();
+</script>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var songs = [], byId = {};
+  var col = null, assets = null;
+  var loaded = false, busy = false, started = false;
+  var files = [], chain = {}, urls = {};
+  var curId = "";
+  var MIME = { mp3: "audio/mpeg", m4a: "audio/mp4", aac: "audio/aac", wav: "audio/wav", ogg: "audio/ogg", opus: "audio/ogg", flac: "audio/flac" };
+
+  function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+  function say(msg, isErr) { var s = $("sg-status"); s.textContent = msg || ""; s.className = "status" + (isErr ? " err" : ""); }
+  function queue(id, fn) {
+    var p = (chain[id] || Promise.resolve()).then(fn).catch(function (e) { say("Save bhayena. Feri try garnus. (" + ((e && e.code) || "error") + ")", true); });
+    chain[id] = p; return p;
+  }
+  function nepal(ts) { return new Date(ts).toLocaleString("en-US", { timeZone: "Asia/Kathmandu", day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" }); }
+  function nameOf(by) { return by === "Aaru" ? "Butki" : by === "Jash" ? "Jash" : ""; }
+  function ext(n) { var m = /\.([a-z0-9]+)$/i.exec(n || ""); return m ? m[1].toLowerCase() : ""; }
+
+  function render() {
+    $("sg-count").textContent = loaded ? (songs.length ? songs.length + (songs.length === 1 ? " song" : " songs") : "No songs yet") : "Loading";
+    $("sg-empty").hidden = !(loaded && songs.length === 0);
+    $("sg-add").hidden = !assets;
+    $("sg-save").disabled = !col || busy;
+    var list = $("sg-list");
+    list.textContent = "";
+    songs.forEach(function (sg, i) {
+      var card = el("div", "card" + (sg.id === curId ? " now" : ""));
+      var row = el("div", "songrow");
+      var pb = el("button", "play");
+      pb.type = "button";
+      pb.setAttribute("aria-label", "Play " + sg.title);
+      pb.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
+      pb.addEventListener("click", function () { playIdx(i); });
+      row.appendChild(pb);
+      row.appendChild(el("h2", null, sg.title));
+      card.appendChild(row);
+      var meta = el("div", "row");
+      var who = nameOf(sg.by);
+      meta.appendChild(el("span", "when", (who ? who + " \u00B7 " : "") + nepal(sg.at)));
+      if (col) {
+        var del = el("button", "btn quiet danger", "Delete");
+        del.type = "button";
+        del.addEventListener("click", function () { removeSong(sg); });
+        meta.appendChild(del);
+      }
+      card.appendChild(meta);
+      list.appendChild(card);
+    });
+  }
+
+  function ingest(snap) {
+    songs = snap.docs.map(function (d) {
+      var x = d.data() || {};
+      return { id: d.id, asset: String(x.asset || ""), title: String(x.title || "Gaana"), mime: String(x.mime || "audio/mpeg"), at: Number(x.at) || 0, by: typeof x.by === "string" ? x.by : "" };
+    }).filter(function (sg) { return sg.asset; });
+    songs.sort(function (a, b) { return b.at - a.at; });
+    byId = {};
+    songs.forEach(function (sg) { byId[sg.id] = sg; });
+    loaded = true;
+    render();
+  }
+
+  // Playback: fetch the file and hand the player a blob with the right audio type.
+  function getUrl(sg) {
+    if (urls[sg.asset]) return Promise.resolve(urls[sg.asset]);
+    say("Gaana load hudai chha...");
+    return fetch(window.hkBlobBase + sg.asset).then(function (r) {
+      if (!r.ok) throw new Error("http " + r.status);
+      return r.arrayBuffer();
+    }).then(function (buf) {
+      var u = URL.createObjectURL(new Blob([buf], { type: sg.mime }));
+      urls[sg.asset] = u; say("");
+      return u;
+    });
+  }
+  function playIdx(i) {
+    var sg = songs[i];
+    if (!sg) return;
+    curId = sg.id;
+    $("sg-now").hidden = false;
+    $("sg-nowTitle").textContent = sg.title;
+    render();
+    getUrl(sg).then(function (u) {
+      if (curId !== sg.id) return;
+      var a = $("sg-audio");
+      a.src = u;
+      var pr = a.play();
+      if (pr && pr.catch) pr.catch(function () { say("Mathi ko play button thichnus."); });
+    }).catch(function () { say("Gaana load bhayena. Feri try garnus.", true); });
+  }
+  $("sg-audio").addEventListener("ended", function () {
+    var i = songs.findIndex(function (sg) { return sg.id === curId; });
+    if (i >= 0 && i + 1 < songs.length) playIdx(i + 1);
+  });
+
+  function removeSong(sg) {
+    if (!col) return;
+    window.hkConfirmPin("Gaana delete garna PIN halnus").then(function (ok) {
+      if (!ok) return;
+      if (curId === sg.id) { $("sg-audio").pause(); $("sg-audio").removeAttribute("src"); $("sg-now").hidden = true; curId = ""; }
+      queue(sg.id, function () {
+        return col.doc(sg.id).delete().then(function () {
+          if (assets && sg.asset) assets.delete(sg.asset).catch(function () {});
+        });
+      });
+    });
+  }
+
+  // Upload
+  $("sg-file").addEventListener("change", function () {
+    Array.prototype.slice.call($("sg-file").files).forEach(function (f) { files.push(f); });
+    $("sg-file").value = "";
+    $("sg-picked").textContent = files.length ? files.length + " gaana chhaneko" : "";
+  });
+  $("sg-save").addEventListener("click", function () {
+    if (!col || !assets || busy) return;
+    if (!files.length) { say("Pahila gaana chhannus.", true); return; }
+    busy = true; render();
+    var list = files.slice(), typed = $("sg-title").value.trim(), done = 0, failed = 0, tooBig = 0, base = Date.now();
+    list.reduce(function (p, f, i) {
+      return p.then(function () {
+        if (f.size > 20 * 1024 * 1024) { tooBig++; return; }
+        say("Gaana upload hudai chha (" + (i + 1) + "/" + list.length + ")");
+        var mime = (f.type && f.type.indexOf("audio/") === 0) ? f.type : (MIME[ext(f.name)] || "audio/mpeg");
+        var title = (list.length === 1 && typed) ? typed : f.name.replace(/\.[^.]+$/, "");
+        // Audio is not an accepted asset type, so the bytes go up under a video type and the real type is kept in the row.
+        return assets.upload(new Blob([f], { type: "video/mp4" }), { type: "video/mp4" }).then(function (r) {
+          return col.add({ asset: r.id, title: title, mime: mime, at: base + i, by: window.hkMe || "" });
+        }).then(function () { done++; }).catch(function (e) { failed++; say("Upload bhayena (" + ((e && e.code) || "error") + ")", true); });
+      });
+    }, Promise.resolve()).then(function () {
+      files = []; $("sg-picked").textContent = ""; $("sg-title").value = "";
+      if (failed || tooBig) say(done + " ota save bhayo" + (failed ? ", " + failed + " ota bhayena" : "") + (tooBig ? ", " + tooBig + " ota 20 MB bhanda thulo" : "") + ".", true);
+      else say(done + " ota gaana save bhayo.");
+    }).then(function () { busy = false; render(); });
+  });
+
+  async function start() {
+    if (started) return;
+    started = true;
+    try {
+      var c = window.claude && window.claude.use ? window.claude : null;
+      var db = c ? await c.use("db") : null;
+      assets = c ? await c.use("assets") : null;
+      if (!db) { loaded = true; say("Save garna login hunuparchha. Supabase setup pura bhayo ki herna.", true); render(); return; }
+      col = db.collection("songs");
+      col.orderBy("at", "desc").onSnapshot(ingest, function (e) {
+        loaded = true; say("Gaana load bhayena. (" + ((e && e.code) || "error") + ")", true); render();
+      });
+      render();
+    } catch (e) { loaded = true; say("Page ma problem aayo. Feri kholnus.", true); render(); }
+  }
+
+  render();
+  if (window.hkMe) start();
+  document.addEventListener("hk-login", start);
+})();
+</script>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var clips = [];
+  var col = null, assets = null;
+  var loaded = false, busy = false, started = false;
+  var files = [], chain = {};
+  var MAX = 20 * 1024 * 1024;
+  var MIME = { mp4: "video/mp4", m4v: "video/mp4", mov: "video/quicktime", webm: "video/webm", "3gp": "video/3gpp" };
+
+  function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+  function say(msg, isErr) { var s = $("cl-status"); s.textContent = msg || ""; s.className = "status" + (isErr ? " err" : ""); }
+  function queue(id, fn) {
+    var p = (chain[id] || Promise.resolve()).then(fn).catch(function (e) { say("Save bhayena. Feri try garnus. (" + ((e && e.code) || "error") + ")", true); });
+    chain[id] = p; return p;
+  }
+  function nepal(ts) { return new Date(ts).toLocaleString("en-US", { timeZone: "Asia/Kathmandu", day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" }); }
+  function nameOf(by) { return by === "Aaru" ? "Butki" : by === "Jash" ? "Jash" : ""; }
+  function ext(n) { var m = /\.([a-z0-9]+)$/i.exec(n || ""); return m ? m[1].toLowerCase() : ""; }
+
+  function render() {
+    $("cl-count").textContent = loaded ? (clips.length ? clips.length + (clips.length === 1 ? " video" : " videos") : "No videos yet") : "Loading";
+    $("cl-empty").hidden = !(loaded && clips.length === 0);
+    $("cl-add").hidden = !assets;
+    $("cl-save").disabled = !col || busy;
+    var list = $("cl-list");
+    list.textContent = "";
+    clips.forEach(function (c) {
+      var card = el("div", "card");
+      var v = document.createElement("video");
+      v.controls = true; v.preload = "metadata"; v.playsInline = true;
+      v.src = window.hkBlobBase + c.asset;
+      card.appendChild(v);
+      if (c.title) card.appendChild(el("h2", null, c.title));
+      var meta = el("div", "row");
+      var who = nameOf(c.by);
+      meta.appendChild(el("span", "when", (who ? who + " \u00B7 " : "") + nepal(c.at)));
+      if (col) {
+        var del = el("button", "btn quiet danger", "Delete");
+        del.type = "button";
+        del.addEventListener("click", function () { removeClip(c); });
+        meta.appendChild(del);
+      }
+      card.appendChild(meta);
+      list.appendChild(card);
+    });
+  }
+
+  function ingest(snap) {
+    clips = snap.docs.map(function (d) {
+      var x = d.data() || {};
+      return { id: d.id, asset: String(x.asset || ""), title: String(x.title || ""), at: Number(x.at) || 0, by: typeof x.by === "string" ? x.by : "" };
+    }).filter(function (c) { return c.asset; });
+    clips.sort(function (a, b) { return b.at - a.at; });
+    loaded = true;
+    render();
+  }
+
+  function removeClip(c) {
+    if (!col) return;
+    window.hkConfirmPin("Video delete garna PIN halnus").then(function (ok) {
+      if (!ok) return;
+      queue(c.id, function () {
+        return col.doc(c.id).delete().then(function () {
+          if (assets && c.asset) assets.delete(c.asset).catch(function () {});
+        });
+      });
+    });
+  }
+
+  $("cl-file").addEventListener("change", function () {
+    Array.prototype.slice.call($("cl-file").files).forEach(function (f) { files.push(f); });
+    $("cl-file").value = "";
+    $("cl-picked").textContent = files.length ? files.length + " video chhaneko" : "";
+  });
+  function up(f) {
+    var ty = (f.type && f.type.indexOf("video/") === 0) ? f.type : (MIME[ext(f.name)] || "video/mp4");
+    return assets.upload(f, { type: ty }).catch(function (e) {
+      if (e && e.code === "unsupported_type" && ty !== "video/mp4") return assets.upload(new Blob([f], { type: "video/mp4" }), { type: "video/mp4" });
+      throw e;
+    });
+  }
+  $("cl-save").addEventListener("click", function () {
+    if (!col || !assets || busy) return;
+    if (!files.length) { say("Pahila video chhannus.", true); return; }
+    busy = true; render();
+    var list = files.slice(), typed = $("cl-title").value.trim(), done = 0, failed = 0, tooBig = 0, base = Date.now();
+    list.reduce(function (p, f, i) {
+      return p.then(function () {
+        if (f.size > MAX) { tooBig++; return; }
+        say("Video upload hudai chha (" + (i + 1) + "/" + list.length + ")");
+        var title = (list.length === 1 && typed) ? typed : "";
+        return up(f).then(function (r) {
+          return col.add({ asset: r.id, title: title, at: base + i, by: window.hkMe || "" });
+        }).then(function () { done++; }).catch(function (e) { failed++; say("Upload bhayena (" + ((e && e.code) || "error") + ")", true); });
+      });
+    }, Promise.resolve()).then(function () {
+      files = []; $("cl-picked").textContent = ""; $("cl-title").value = "";
+      if (failed || tooBig) say(done + " ota save bhayo" + (failed ? ", " + failed + " ota bhayena" : "") + (tooBig ? ", " + tooBig + " ota 20 MB bhanda thulo" : "") + ".", true);
+      else say(done + " ota video save bhayo.");
+    }).then(function () { busy = false; render(); });
+  });
+
+  async function start() {
+    if (started) return;
+    started = true;
+    try {
+      var c = window.claude && window.claude.use ? window.claude : null;
+      var db = c ? await c.use("db") : null;
+      assets = c ? await c.use("assets") : null;
+      if (!db) { loaded = true; say("Save garna login hunuparchha. Supabase setup pura bhayo ki herna.", true); render(); return; }
+      col = db.collection("clips");
+      col.orderBy("at", "desc").onSnapshot(ingest, function (e) {
+        loaded = true; say("Video load bhayena. (" + ((e && e.code) || "error") + ")", true); render();
+      });
+      render();
+    } catch (e) { loaded = true; say("Page ma problem aayo. Feri kholnus.", true); render(); }
+  }
+
+  render();
+  if (window.hkMe) start();
+  document.addEventListener("hk-login", start);
+})();
+</script>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var PAL = {
+    rose: {
+      light: { "--bg": "#FDEFF3", "--fg": "#3A1020", "--muted": "#8A5468", "--line": "#F1CCD8", "--accent": "#C2185B", "--accent-ink": "#FFFFFF", "--sky": "#EC6A94" },
+      dark: { "--bg": "#1E0B14", "--surface": "#321522", "--fg": "#FCEAF1", "--muted": "#D9A8BC", "--line": "#532438", "--accent": "#FF8FB5", "--accent-ink": "#2A0A18", "--sky": "#F06292" }
+    },
+    green: {
+      light: { "--bg": "#EAF7EF", "--fg": "#0F2A1B", "--muted": "#4F7A62", "--line": "#C7E6D3", "--accent": "#1E7A46", "--accent-ink": "#FFFFFF", "--sky": "#3FB27A" },
+      dark: { "--bg": "#08170F", "--surface": "#10281C", "--fg": "#E6F7EC", "--muted": "#9CCDB0", "--line": "#24493A", "--accent": "#6FE0A0", "--accent-ink": "#08170F", "--sky": "#4CC98A" }
+    },
+    purple: {
+      light: { "--bg": "#F3EEFD", "--fg": "#1E1238", "--muted": "#6B5A92", "--line": "#DDD2F2", "--accent": "#6D3FC4", "--accent-ink": "#FFFFFF", "--sky": "#9B6FE8" },
+      dark: { "--bg": "#130B24", "--surface": "#21153D", "--fg": "#F0EAFD", "--muted": "#BBA9E3", "--line": "#3B2A66", "--accent": "#B79BFF", "--accent-ink": "#130B24", "--sky": "#9F7CF0" }
+    }
+  };
+  var ALL = ["--bg", "--surface", "--fg", "--muted", "--line", "--accent", "--accent-ink", "--sky"];
+  var st = { mode: "auto", color: "blue" };
+  try { var sv = JSON.parse(localStorage.getItem("hk-theme") || "null"); if (sv) { if (sv.mode) st.mode = sv.mode; if (sv.color) st.color = sv.color; } } catch (e) {}
+  function isDark() { return st.mode === "dark" || (st.mode === "auto" && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches); }
+  function apply() {
+    var root = document.documentElement, dark = isDark();
+    if (st.mode === "auto") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", dark ? "dark" : "light");
+    ALL.forEach(function (v) { root.style.removeProperty(v); });
+    var p = PAL[st.color];
+    if (p) { var t = p[dark ? "dark" : "light"]; Object.keys(t).forEach(function (k) { root.style.setProperty(k, t[k]); }); }
+    $("modeBtn").textContent = dark ? "\u2600\uFE0F" : "\uD83C\uDF19";
+    document.querySelectorAll("#palette button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-c") === st.color)); });
+  }
+  function save() { try { localStorage.setItem("hk-theme", JSON.stringify(st)); } catch (e) {} }
+  $("modeBtn").addEventListener("click", function () { st.mode = isDark() ? "light" : "dark"; save(); apply(); });
+  $("colorBtn").addEventListener("click", function () { var p = $("palette"); p.hidden = !p.hidden; $("colorBtn").setAttribute("aria-expanded", String(!p.hidden)); });
+  document.querySelectorAll("#palette button").forEach(function (b) {
+    b.addEventListener("click", function () { st.color = b.getAttribute("data-c"); save(); apply(); });
+  });
+  document.querySelectorAll(".tabs button").forEach(function (b) {
+    b.addEventListener("click", function () { b.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" }); });
+  });
+  apply();
+})();
+</script>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var db = null, started = false, settings = null, settingsId = "", filled = false;
+  var notes = [], photos = [], places = [];
+  var map = null, mapReady = false, markers = {}, pending = null, fitted = false;
+
+  function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+  function say(msg, isErr) { var s = $("dn-status"); s.textContent = msg || ""; s.className = "status" + (isErr ? " err" : ""); }
+  function pad2(n) { return n < 10 ? "0" + n : String(n); }
+  function todayNP() { return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kathmandu" }); }
+  function utc(s) { var p = s.split("-"); return Date.UTC(+p[0], +p[1] - 1, +p[2]); }
+  function daysBetween(a, b) { return Math.round((utc(b) - utc(a)) / 86400000); }
+  function dayNum() { return Math.floor(utc(todayNP()) / 86400000); }
+  function fmtDate(ds) { return new Date(utc(ds)).toLocaleDateString("en-US", { timeZone: "UTC", day: "numeric", month: "short", year: "numeric" }); }
+  function nextOccur(ds, today) {
+    var p = ds.split("-"), y = +today.slice(0, 4), m = +p[1], d = +p[2];
+    function mk(yy) { var dd = d; if (m === 2 && d === 29 && !((yy % 4 === 0 && yy % 100 !== 0) || yy % 400 === 0)) dd = 28; return yy + "-" + pad2(m) + "-" + pad2(dd); }
+    var c = mk(y);
+    return c < today ? mk(y + 1) : c;
+  }
+  function ymd(a, b) {
+    var ay = +a.slice(0, 4), am = +a.slice(5, 7), ad = +a.slice(8, 10), by = +b.slice(0, 4), bm = +b.slice(5, 7), bd = +b.slice(8, 10);
+    var y = by - ay, m = bm - am, d = bd - ad;
+    if (d < 0) { m--; d += new Date(Date.UTC(by, bm - 1, 0)).getUTCDate(); }
+    if (m < 0) { y--; m += 12; }
+    return { y: y, m: m, d: d };
+  }
+  function nameOf(by) { return by === "Aaru" ? "Butki" : by === "Jash" ? "Jash" : ""; }
+
+  function renderTop() {
+    var t = todayNP();
+    if (settings && settings.start && settings.start <= t) {
+      $("dn-days").textContent = daysBetween(settings.start, t) + " din";
+      var r = ymd(settings.start, t);
+      $("dn-ymd").textContent = r.y + " barsa, " + r.m + " mahina, " + r.d + " din";
+    } else {
+      $("dn-days").textContent = "\u2014";
+      $("dn-ymd").textContent = "Tala \u201CMitti haru set garnus\u201D ma suru bhayeko mitti halnus.";
+    }
+    var items = [];
+    function add(label, ds, withYears) {
+      if (!ds) return;
+      var nx = nextOccur(ds, t), yrs = +nx.slice(0, 4) - +ds.slice(0, 4);
+      items.push({ label: label + (withYears && yrs > 0 ? " (" + yrs + ")" : ""), date: nx, days: daysBetween(t, nx) });
+    }
+    if (settings) {
+      add("Anniversary", settings.anniv || settings.start, true);
+      add("Butki ko birthday", settings.bA, true);
+      add("Jash ko birthday", settings.bJ, true);
+    }
+    items.sort(function (a, b) { return a.days - b.days; });
+    var ul = $("dn-list");
+    ul.textContent = "";
+    if (!items.length) { ul.appendChild(el("li", "muted", "Mitti set garepachhi countdown yaha dekhinchha.")); return; }
+    items.forEach(function (it) {
+      var li = el("li");
+      var left = el("div");
+      left.appendChild(el("div", null, it.label));
+      left.appendChild(el("div", "muted", fmtDate(it.date)));
+      li.appendChild(left);
+      li.appendChild(el("span", "n", it.days === 0 ? "Aaja! \uD83C\uDF89" : it.days + " din"));
+      ul.appendChild(li);
+    });
+  }
+
+  function renderMem() {
+    var box = $("dn-mem");
+    box.textContent = "";
+    if (!photos.length) { box.appendChild(el("p", "muted", "Album ma photo halepachhi aajako yaad yaha aaunchha.")); return; }
+    var p = photos[dayNum() % photos.length];
+    var img = document.createElement("img");
+    img.className = "memimg"; img.alt = p.caption || "Aajako yaad"; img.src = window.hkBlobBase + p.asset;
+    box.appendChild(img);
+    if (p.caption) box.appendChild(el("p", null, p.caption));
+    box.appendChild(el("p", "muted", new Date(p.at).toLocaleDateString("en-US", { timeZone: "Asia/Kathmandu", day: "numeric", month: "short", year: "numeric" })));
+  }
+
+  function renderNotes() {
+    $("dn-nCount").textContent = String(notes.length);
+    var n = $("dn-note");
+    if (!notes.length) n.textContent = "Tala pahilo love note lekhnus.";
+    else { var x = notes[dayNum() % notes.length]; n.textContent = "\u201C" + x.text + "\u201D" + (nameOf(x.by) ? " \u2014 " + nameOf(x.by) : ""); }
+    var ul = $("dn-notes");
+    ul.textContent = "";
+    notes.slice().reverse().forEach(function (x) {
+      var li = el("li");
+      li.appendChild(el("span", null, x.text + (nameOf(x.by) ? " \u2014 " + nameOf(x.by) : "")));
+      var del = el("button", "btn quiet danger", "Delete");
+      del.type = "button";
+      del.addEventListener("click", function () {
+        window.hkConfirmPin("Note delete garna PIN halnus").then(function (ok) {
+          if (ok) db.collection("notes").doc(x.id).delete().catch(function () { say("Delete bhayena.", true); });
+        });
+      });
+      li.appendChild(del);
+      ul.appendChild(li);
+    });
+  }
+
+  // ---- Map ----
+  function initMap() {
+    if (mapReady) { if (map) map.invalidateSize(); return; }
+    if (!window.L) { say("Map load bhayena. Internet herera feri kholnus.", true); return; }
+    mapReady = true;
+    map = L.map("dn-map").setView([27.7172, 85.324], 12);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "&copy; OpenStreetMap" }).addTo(map);
+    map.on("click", function (e) { setPending(e.latlng); });
+    drawMarkers();
+  }
+  function setPending(ll) {
+    if (!map) return;
+    if (pending) pending.setLatLng(ll); else pending = L.marker(ll, { draggable: true, opacity: 0.75 }).addTo(map);
+    $("dn-pickInfo").textContent = "Thau chhaniyo. Naam lekhera \u201CThau thapnus\u201D thichnus.";
+  }
+  function drawMarkers() {
+    if (!map) return;
+    Object.keys(markers).forEach(function (k) { map.removeLayer(markers[k]); });
+    markers = {};
+    places.forEach(function (p) {
+      var m = L.marker([p.lat, p.lng]).addTo(map);
+      var d = document.createElement("div"); d.textContent = p.name; m.bindPopup(d);
+      markers[p.id] = m;
+    });
+    if (places.length && !fitted) { fitted = true; map.fitBounds(L.latLngBounds(places.map(function (p) { return [p.lat, p.lng]; })), { padding: [30, 30], maxZoom: 15 }); }
+  }
+  function renderPlaces() {
+    var ul = $("dn-places");
+    ul.textContent = "";
+    places.slice().reverse().forEach(function (p) {
+      var li = el("li");
+      var b = el("button", "btn quiet", p.name);
+      b.type = "button";
+      b.addEventListener("click", function () { if (map && markers[p.id]) { map.setView([p.lat, p.lng], 15); markers[p.id].openPopup(); $("dn-map").scrollIntoView({ block: "center", behavior: "smooth" }); } });
+      li.appendChild(b);
+      var del = el("button", "btn quiet danger", "Delete");
+      del.type = "button";
+      del.addEventListener("click", function () {
+        window.hkConfirmPin("Thau delete garna PIN halnus").then(function (ok) {
+          if (ok) db.collection("places").doc(p.id).delete().catch(function () { say("Delete bhayena.", true); });
+        });
+      });
+      li.appendChild(del);
+      ul.appendChild(li);
+    });
+    drawMarkers();
+  }
+
+  // ---- Buttons ----
+  $("dn-save").addEventListener("click", function () {
+    if (!db) return;
+    var v = { start: $("dn-start").value, anniv: $("dn-anniv").value, bA: $("dn-bA").value, bJ: $("dn-bJ").value, at: Date.now() };
+    var col = db.collection("settings");
+    (settingsId ? col.doc(settingsId).update(v) : col.add(v)).then(function () { say("Mitti save bhayo."); }).catch(function (e) { say("Save bhayena (" + ((e && e.code) || "error") + ")", true); });
+  });
+  $("dn-noteAdd").addEventListener("click", function () {
+    var t = $("dn-noteIn").value.trim();
+    if (!db || !t) return;
+    db.collection("notes").add({ text: t, by: window.hkMe || "", at: Date.now() }).then(function () { $("dn-noteIn").value = ""; say("Note save bhayo."); }).catch(function (e) { say("Save bhayena (" + ((e && e.code) || "error") + ")", true); });
+  });
+  $("dn-here").addEventListener("click", function () {
+    if (!navigator.geolocation) { say("Yo browser ma location chalena.", true); return; }
+    initMap();
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      var ll = L.latLng(pos.coords.latitude, pos.coords.longitude);
+      setPending(ll); map.setView(ll, 15);
+    }, function () { say("Location permission diyenau ya paaena.", true); });
+  });
+  $("dn-placeAdd").addEventListener("click", function () {
+    var name = $("dn-placeName").value.trim();
+    if (!db) return;
+    if (!pending) { say("Pahila map ma thau chhannus.", true); return; }
+    if (!name) { say("Thau ko naam lekhnus.", true); return; }
+    var ll = pending.getLatLng();
+    db.collection("places").add({ name: name, lat: ll.lat, lng: ll.lng, by: window.hkMe || "", at: Date.now() }).then(function () {
+      $("dn-placeName").value = ""; if (pending) { map.removeLayer(pending); pending = null; }
+      $("dn-pickInfo").textContent = "Thau save bhayo."; say("");
+    }).catch(function (e) { say("Save bhayena (" + ((e && e.code) || "error") + ")", true); });
+  });
+  $("t-din").addEventListener("click", function () { renderTop(); setTimeout(initMap, 60); });
+
+  function fill() {
+    if (filled || !settings) return;
+    filled = true;
+    $("dn-start").value = settings.start || ""; $("dn-anniv").value = settings.anniv || ""; $("dn-bA").value = settings.bA || ""; $("dn-bJ").value = settings.bJ || "";
+  }
+  async function start() {
+    if (started) return;
+    started = true;
+    try {
+      var c = window.claude && window.claude.use ? window.claude : null;
+      db = c ? await c.use("db") : null;
+      if (!db) { say("Login hunuparchha. Supabase setup pura bhayo ki herna.", true); return; }
+      var err = function (e) { say("Load bhayena (" + ((e && e.code) || "error") + ")", true); };
+      db.collection("settings").orderBy("at", "desc").onSnapshot(function (s) {
+        var d = s.docs[0]; settings = d ? d.data() : null; settingsId = d ? d.id : ""; fill(); renderTop();
+      }, err);
+      db.collection("notes").orderBy("at", "asc").onSnapshot(function (s) {
+        notes = s.docs.map(function (d) { var x = d.data() || {}; return { id: d.id, text: String(x.text || ""), by: String(x.by || ""), at: Number(x.at) || 0 }; }).filter(function (x) { return x.text; });
+        renderNotes();
+      }, err);
+      db.collection("album").orderBy("at", "asc").onSnapshot(function (s) {
+        photos = s.docs.map(function (d) { var x = d.data() || {}; return { id: d.id, asset: String(x.asset || ""), caption: String(x.caption || ""), at: Number(x.at) || 0 }; }).filter(function (x) { return x.asset; });
+        renderMem();
+      }, err);
+      db.collection("places").orderBy("at", "asc").onSnapshot(function (s) {
+        places = s.docs.map(function (d) { var x = d.data() || {}; return { id: d.id, name: String(x.name || "Thau"), lat: Number(x.lat), lng: Number(x.lng), at: Number(x.at) || 0 }; }).filter(function (x) { return isFinite(x.lat) && isFinite(x.lng); });
+        renderPlaces();
+      }, err);
+      setInterval(renderTop, 60000);
+    } catch (e) { say("Page ma problem aayo. Feri kholnus.", true); }
+  }
+  renderTop(); renderMem(); renderNotes();
+  if (window.hkMe) start();
+  document.addEventListener("hk-login", start);
+})();
+</script>
+
+</body></html>
