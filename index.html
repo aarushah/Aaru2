@@ -351,6 +351,12 @@ body::before {
 .cbtns button { min-width: 78px; height: 78px; padding: 0 12px; border-radius: 39px; border: 0; color: #fff; background: rgba(255, 255, 255, 0.2); font-size: 0.95rem; cursor: pointer; }
 .cbtns .end { background: #E5484D; }
 .cbtns .acc { background: #2BB673; }
+
+/* Kahani */
+#tab-story textarea { width: 100%; min-height: 180px; resize: vertical; padding: 12px 14px; line-height: 1.7; font: inherit; background: color-mix(in srgb, var(--surface) 82%, transparent); border: 1px solid var(--glass-line); border-radius: 16px; color: var(--fg); }
+#tab-story input[type="date"] { width: 100%; padding: 10px 14px; background: color-mix(in srgb, var(--surface) 82%, transparent); border: 1px solid var(--glass-line); border-radius: 14px; color: var(--fg); font: inherit; }
+.story-text { white-space: pre-wrap; line-height: 1.75; font-size: 1.02rem; padding-inline: 4px; overflow-wrap: anywhere; }
+.story-meta { font-size: 0.8rem; color: var(--muted); padding-inline: 4px; }
 .picked:empty { display: none; }
 .picked { padding-inline: 8px; }
 
@@ -409,7 +415,7 @@ body::before {
     </label>
     <button class="btn" type="submit" id="gBtn">Login</button>
     <p class="status" id="gStatus" role="status"></p>
-    <p style="text-align:center;font-size:0.75rem;opacity:0.6;margin-top:6px">v10</p>
+    <p style="text-align:center;font-size:0.75rem;opacity:0.6;margin-top:6px">v11</p>
   </form>
 </div>
 
@@ -467,6 +473,7 @@ body::before {
       <div class="tl-actions">
         <button class="btn quiet" type="button" id="modeBtn" aria-label="Dark ya light mode">🌙</button>
         <button class="btn quiet" type="button" id="colorBtn" aria-label="Rang chhannus" aria-expanded="false">🎨</button>
+        <button class="btn quiet" type="button" id="bkBtn" aria-label="Backup download">⬇️</button>
         <button class="btn quiet" type="button" id="logout">Logout</button>
       </div>
     </div>
@@ -486,6 +493,7 @@ body::before {
     <button type="button" role="tab" id="t-links" aria-selected="false" aria-controls="tab-links">Links</button>
     <button type="button" role="tab" id="t-album" aria-selected="false" aria-controls="tab-album">Album</button>
     <button type="button" role="tab" id="t-songs" aria-selected="false" aria-controls="tab-songs">Songs</button>
+    <button type="button" role="tab" id="t-story" aria-selected="false" aria-controls="tab-story">Kahani</button>
   </div>
 
   <div class="tab" id="tab-chat" role="tabpanel" aria-labelledby="t-chat">
@@ -637,6 +645,24 @@ body::before {
     <p class="empty" id="sg-empty" hidden>Song album abhi khali chha. Mathi gaana chhanera Save thichnus.</p>
   </div>
 
+  <div class="tab" id="tab-story" role="tabpanel" aria-labelledby="t-story" hidden>
+    <div class="card">
+      <p class="label">Hamro kahani</p>
+      <p class="muted" id="st-count">Loading</p>
+    </div>
+    <div class="add" id="st-add">
+      <input type="text" id="st-title" maxlength="120" placeholder="Chapter ko naam (jastai: Pahilo bhet)" aria-label="Chapter title">
+      <input type="date" id="st-date" aria-label="Mitti">
+      <textarea id="st-text" maxlength="5000" placeholder="Yaha kahani lekhnus..." aria-label="Chapter text"></textarea>
+      <div class="add-row">
+        <span class="grow"></span>
+        <button class="btn" type="button" id="st-save">Chapter thapnus</button>
+      </div>
+    </div>
+    <p class="status" id="st-status" role="status"></p>
+    <div class="list" id="st-list"></div>
+    <p class="empty" id="st-empty" hidden>Kahani abhi khali chha. Pahilo chapter lekhnus.</p>
+  </div>
 </main>
 
 <div class="lightbox" id="lb" hidden role="dialog" aria-modal="true" aria-label="Photo">
@@ -1368,7 +1394,7 @@ body::before {
 
 <script>
 (function () {
-  var tabs = [["t-chat", "tab-chat"], ["t-vid", "tab-videos"], ["t-links", "tab-links"], ["t-album", "tab-album"], ["t-songs", "tab-songs"]];
+  var tabs = [["t-chat", "tab-chat"], ["t-vid", "tab-videos"], ["t-links", "tab-links"], ["t-album", "tab-album"], ["t-songs", "tab-songs"], ["t-story", "tab-story"]];
   function show(i) {
     tabs.forEach(function (x, k) {
       document.getElementById(x[1]).hidden = k !== i;
@@ -2446,6 +2472,135 @@ body::before {
   }
   document.addEventListener("hk-login", init);
   if (window.hkMe) init();
+})();
+</script>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var col = null, stories = [], loaded = false, busy = false, started = false;
+
+  function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+  function say(msg, isErr) { var s = $("st-status"); s.textContent = msg || ""; s.className = "status" + (isErr ? " err" : ""); }
+  function todayNP() { return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kathmandu" }); }
+  function fmtDate(ds) {
+    if (!ds) return "";
+    var p = ds.split("-");
+    return new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])).toLocaleDateString("en-US", { timeZone: "UTC", day: "numeric", month: "short", year: "numeric" });
+  }
+  function nameOf(by) { return by === "Aaru" ? "Butki" : by === "Jash" ? "Jash" : ""; }
+
+  function render() {
+    $("st-count").textContent = loaded ? (stories.length ? stories.length + (stories.length === 1 ? " chapter" : " chapters") : "No chapters yet") : "Loading";
+    $("st-empty").hidden = !(loaded && stories.length === 0);
+    $("st-add").hidden = !col;
+    $("st-save").disabled = !col || busy;
+    var list = $("st-list");
+    list.textContent = "";
+    stories.forEach(function (c, i) {
+      var card = el("div", "card");
+      card.appendChild(el("h2", null, (i + 1) + ". " + (c.title || "Chapter")));
+      card.appendChild(el("div", "story-meta", fmtDate(c.on) + (nameOf(c.by) ? " \u00B7 " + nameOf(c.by) : "")));
+      card.appendChild(el("p", "story-text", c.text));
+      var row = el("div", "row");
+      var del = el("button", "btn quiet danger", "Delete");
+      del.type = "button";
+      del.addEventListener("click", function () { removeChapter(c); });
+      row.appendChild(del);
+      card.appendChild(row);
+      list.appendChild(card);
+    });
+  }
+
+  function ingest(snap) {
+    stories = snap.docs.map(function (d) {
+      var x = d.data() || {};
+      return { id: d.id, title: String(x.title || ""), text: String(x.text || ""), on: String(x.on || ""), by: typeof x.by === "string" ? x.by : "", at: Number(x.at) || 0 };
+    }).filter(function (c) { return c.text; });
+    stories.sort(function (a, b) { return (a.on || "") < (b.on || "") ? -1 : (a.on || "") > (b.on || "") ? 1 : a.at - b.at; });
+    loaded = true;
+    render();
+  }
+
+  function removeChapter(c) {
+    if (!col) return;
+    window.hkConfirmPin("Chapter delete garna PIN halnus").then(function (ok) {
+      if (!ok) return;
+      col.doc(c.id).delete().then(function () { say("Chapter delete bhayo."); }).catch(function (e) { say("Delete bhayena (" + ((e && e.code) || "error") + ")", true); });
+    });
+  }
+
+  $("st-save").addEventListener("click", function () {
+    if (!col || busy) return;
+    var title = $("st-title").value.trim(), text = $("st-text").value.trim(), on = $("st-date").value || todayNP();
+    if (!text) { say("Kahani ko text lekhnus.", true); return; }
+    busy = true; render();
+    col.add({ title: title, text: text, on: on, by: window.hkMe || "", at: Date.now() }).then(function () {
+      $("st-title").value = ""; $("st-text").value = ""; say("Chapter save bhayo.");
+    }).catch(function (e) { say("Save bhayena (" + ((e && e.code) || "error") + ")", true); })
+      .then(function () { busy = false; render(); });
+  });
+
+  async function start() {
+    if (started) return;
+    started = true;
+    try {
+      var c = window.claude && window.claude.use ? window.claude : null;
+      var db = c ? await c.use("db") : null;
+      $("st-date").value = todayNP();
+      if (!db) { loaded = true; say("Login hunuparchha.", true); render(); return; }
+      col = db.collection("story");
+      col.orderBy("at", "asc").onSnapshot(ingest, function (e) {
+        loaded = true; say("Load bhayena (" + ((e && e.code) || "error") + ")", true); render();
+      });
+      render();
+    } catch (e) { loaded = true; say("Page ma problem aayo.", true); render(); }
+  }
+  $("st-date").value = todayNP();
+  render();
+  if (window.hkMe) start();
+  document.addEventListener("hk-login", start);
+
+  // ---------- Backup: download all saved data as one JSON file ----------
+  async function backup() {
+    var sb = window.hkSb;
+    if (!sb) { $("status").textContent = "Login hunuparchha."; return; }
+    $("status").className = "status"; $("status").textContent = "Backup banaudai chhu...";
+    var rows = [], from = 0;
+    for (;;) {
+      var r = await sb.from("docs").select("id,col,data,created_at").order("created_at", { ascending: true }).range(from, from + 999);
+      if (r.error) throw r.error;
+      rows = rows.concat(r.data || []);
+      if (!r.data || r.data.length < 1000) break;
+      from += 1000;
+    }
+    var files = [];
+    rows.forEach(function (row) {
+      var d = row.data || {};
+      ["photos", "vids"].forEach(function (k) { (d[k] || []).forEach(function (id) { files.push(id); }); });
+      if (d.voice) files.push(d.voice);
+      if (d.asset) files.push(d.asset);
+    });
+    files = files.filter(function (v, i, a) { return v && a.indexOf(v) === i; });
+    var out = {
+      exported_at: new Date().toISOString(),
+      note: "rows = all saved text, dates and settings. media_files = photos, videos, songs and voice messages; open each url to save the file.",
+      rows: rows,
+      media_files: files.map(function (id) { return { id: id, url: window.hkBlobBase + id }; })
+    };
+    var blob = new Blob([JSON.stringify(out, null, 2)], { type: "application/json" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "hamro-kura-backup-" + todayNP() + ".json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+    $("status").textContent = "Backup download bhayo (" + rows.length + " row, " + files.length + " file link).";
+  }
+  $("bkBtn").addEventListener("click", function () {
+    backup().catch(function (e) { $("status").className = "status err"; $("status").textContent = "Backup bhayena (" + ((e && (e.message || e.code)) || "error") + ")"; });
+  });
 })();
 </script>
 
