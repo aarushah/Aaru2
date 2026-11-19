@@ -409,7 +409,7 @@ body::before {
     </label>
     <button class="btn" type="submit" id="gBtn">Login</button>
     <p class="status" id="gStatus" role="status"></p>
-    <p style="text-align:center;font-size:0.75rem;opacity:0.6;margin-top:6px">v9</p>
+    <p style="text-align:center;font-size:0.75rem;opacity:0.6;margin-top:6px">v10</p>
   </form>
 </div>
 
@@ -486,8 +486,6 @@ body::before {
     <button type="button" role="tab" id="t-links" aria-selected="false" aria-controls="tab-links">Links</button>
     <button type="button" role="tab" id="t-album" aria-selected="false" aria-controls="tab-album">Album</button>
     <button type="button" role="tab" id="t-songs" aria-selected="false" aria-controls="tab-songs">Songs</button>
-    <button type="button" role="tab" id="t-clips" aria-selected="false" aria-controls="tab-clips">Clips</button>
-    <button type="button" role="tab" id="t-din" aria-selected="false" aria-controls="tab-din">Din</button>
   </div>
 
   <div class="tab" id="tab-chat" role="tabpanel" aria-labelledby="t-chat">
@@ -639,73 +637,6 @@ body::before {
     <p class="empty" id="sg-empty" hidden>Song album abhi khali chha. Mathi gaana chhanera Save thichnus.</p>
   </div>
 
-  <div class="tab" id="tab-clips" role="tabpanel" aria-labelledby="t-clips" hidden>
-    <p class="label" id="cl-count">Loading</p>
-    <div class="add" id="cl-add">
-      <input type="text" id="cl-title" maxlength="120" placeholder="Video ko naam (optional)" aria-label="Video title">
-      <div class="add-row">
-        <label class="btn quiet">Video chhannus
-          <input type="file" id="cl-file" accept="video/*" multiple hidden>
-        </label>
-        <span class="picked" id="cl-picked"></span>
-        <span class="grow"></span>
-        <button class="btn" type="button" id="cl-save">Save</button>
-      </div>
-      <p class="note">Yo album ma PIN chhaina, sabaile sidhai herna milchha. Ek video 20 MB samma. Thulo video bhaye pahile chhoto (trim) banaunus.</p>
-    </div>
-    <p class="status" id="cl-status" role="status"></p>
-    <div class="list" id="cl-list"></div>
-    <p class="empty" id="cl-empty" hidden>Video album abhi khali chha. Mathi video chhanera Save thichnus.</p>
-  </div>
-
-  <div class="tab" id="tab-din" role="tabpanel" aria-labelledby="t-din" hidden>
-    <div class="card">
-      <p class="label">Hamro kura suru bhayeko</p>
-      <p class="bignum" id="dn-days">—</p>
-      <p class="muted" id="dn-ymd"></p>
-    </div>
-    <div class="card">
-      <p class="label">Aaune din haru</p>
-      <ul class="cds" id="dn-list"></ul>
-    </div>
-    <div class="card">
-      <p class="label">Aajako yaad</p>
-      <div id="dn-mem"></div>
-    </div>
-    <div class="card">
-      <p class="label">Aajako love note</p>
-      <p class="today-note" id="dn-note"></p>
-      <div class="dn-row" style="margin-top:12px">
-        <input type="text" id="dn-noteIn" maxlength="300" placeholder="Naya love note lekhnus" aria-label="New love note">
-        <button class="btn" type="button" id="dn-noteAdd">Add</button>
-      </div>
-      <details style="margin-top:12px"><summary>Sabai notes (<span id="dn-nCount">0</span>)</summary><ul class="plist" id="dn-notes"></ul></details>
-    </div>
-    <div class="card">
-      <details>
-        <summary>Mitti haru set garnus</summary>
-        <div class="dnf">
-          <label>Hamro kura suru bhayeko mitti<input type="date" id="dn-start"></label>
-          <label>Anniversary ko mitti<input type="date" id="dn-anniv"></label>
-          <label>Butki ko birthday<input type="date" id="dn-bA"></label>
-          <label>Jash ko birthday<input type="date" id="dn-bJ"></label>
-          <button class="btn" type="button" id="dn-save">Save</button>
-        </div>
-      </details>
-    </div>
-    <div class="card">
-      <p class="label">Hamro thau haru</p>
-      <div id="dn-map" aria-label="Map"></div>
-      <p class="muted" id="dn-pickInfo" style="margin-top:8px">Map ma thichera thau chhannus, ya "Ahile ko thau" thichnus.</p>
-      <div class="dn-row">
-        <input type="text" id="dn-placeName" maxlength="80" placeholder="Thau ko naam" aria-label="Place name">
-        <button class="btn quiet" type="button" id="dn-here">Ahile ko thau</button>
-        <button class="btn" type="button" id="dn-placeAdd">Thau thapnus</button>
-      </div>
-      <ul class="plist" id="dn-places"></ul>
-    </div>
-    <p class="status" id="dn-status" role="status"></p>
-  </div>
 </main>
 
 <div class="lightbox" id="lb" hidden role="dialog" aria-modal="true" aria-label="Photo">
@@ -1437,7 +1368,7 @@ body::before {
 
 <script>
 (function () {
-  var tabs = [["t-chat", "tab-chat"], ["t-vid", "tab-videos"], ["t-links", "tab-links"], ["t-album", "tab-album"], ["t-songs", "tab-songs"], ["t-clips", "tab-clips"], ["t-din", "tab-din"]];
+  var tabs = [["t-chat", "tab-chat"], ["t-vid", "tab-videos"], ["t-links", "tab-links"], ["t-album", "tab-album"], ["t-songs", "tab-songs"]];
   function show(i) {
     tabs.forEach(function (x, k) {
       document.getElementById(x[1]).hidden = k !== i;
@@ -2214,130 +2145,7 @@ body::before {
 })();
 </script>
 
-<script>
-(function () {
-  var $ = function (id) { return document.getElementById(id); };
-  var clips = [];
-  var col = null, assets = null;
-  var loaded = false, busy = false, started = false;
-  var files = [], chain = {};
-  var MAX = 20 * 1024 * 1024;
-  var MIME = { mp4: "video/mp4", m4v: "video/mp4", mov: "video/quicktime", webm: "video/webm", "3gp": "video/3gpp" };
 
-  function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
-  function say(msg, isErr) { var s = $("cl-status"); s.textContent = msg || ""; s.className = "status" + (isErr ? " err" : ""); }
-  function queue(id, fn) {
-    var p = (chain[id] || Promise.resolve()).then(fn).catch(function (e) { say("Save bhayena. Feri try garnus. (" + ((e && e.code) || "error") + ")", true); });
-    chain[id] = p; return p;
-  }
-  function nepal(ts) { return new Date(ts).toLocaleString("en-US", { timeZone: "Asia/Kathmandu", day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" }); }
-  function nameOf(by) { return by === "Aaru" ? "Butki" : by === "Jash" ? "Jash" : ""; }
-  function ext(n) { var m = /\.([a-z0-9]+)$/i.exec(n || ""); return m ? m[1].toLowerCase() : ""; }
-
-  function render() {
-    $("cl-count").textContent = loaded ? (clips.length ? clips.length + (clips.length === 1 ? " video" : " videos") : "No videos yet") : "Loading";
-    $("cl-empty").hidden = !(loaded && clips.length === 0);
-    $("cl-add").hidden = !assets;
-    $("cl-save").disabled = !col || busy;
-    var list = $("cl-list");
-    list.textContent = "";
-    clips.forEach(function (c) {
-      var card = el("div", "card");
-      var v = document.createElement("video");
-      v.controls = true; v.preload = "metadata"; v.playsInline = true;
-      v.src = window.hkBlobBase + c.asset;
-      card.appendChild(v);
-      if (c.title) card.appendChild(el("h2", null, c.title));
-      var meta = el("div", "row");
-      var who = nameOf(c.by);
-      meta.appendChild(el("span", "when", (who ? who + " \u00B7 " : "") + nepal(c.at)));
-      if (col) {
-        var del = el("button", "btn quiet danger", "Delete");
-        del.type = "button";
-        del.addEventListener("click", function () { removeClip(c); });
-        meta.appendChild(del);
-      }
-      card.appendChild(meta);
-      list.appendChild(card);
-    });
-  }
-
-  function ingest(snap) {
-    clips = snap.docs.map(function (d) {
-      var x = d.data() || {};
-      return { id: d.id, asset: String(x.asset || ""), title: String(x.title || ""), at: Number(x.at) || 0, by: typeof x.by === "string" ? x.by : "" };
-    }).filter(function (c) { return c.asset; });
-    clips.sort(function (a, b) { return b.at - a.at; });
-    loaded = true;
-    render();
-  }
-
-  function removeClip(c) {
-    if (!col) return;
-    window.hkConfirmPin("Video delete garna PIN halnus").then(function (ok) {
-      if (!ok) return;
-      queue(c.id, function () {
-        return col.doc(c.id).delete().then(function () {
-          if (assets && c.asset) assets.delete(c.asset).catch(function () {});
-        });
-      });
-    });
-  }
-
-  $("cl-file").addEventListener("change", function () {
-    Array.prototype.slice.call($("cl-file").files).forEach(function (f) { files.push(f); });
-    $("cl-file").value = "";
-    $("cl-picked").textContent = files.length ? files.length + " video chhaneko" : "";
-  });
-  function up(f) {
-    var ty = (f.type && f.type.indexOf("video/") === 0) ? f.type : (MIME[ext(f.name)] || "video/mp4");
-    return assets.upload(f, { type: ty }).catch(function (e) {
-      if (e && e.code === "unsupported_type" && ty !== "video/mp4") return assets.upload(new Blob([f], { type: "video/mp4" }), { type: "video/mp4" });
-      throw e;
-    });
-  }
-  $("cl-save").addEventListener("click", function () {
-    if (!col || !assets || busy) return;
-    if (!files.length) { say("Pahila video chhannus.", true); return; }
-    busy = true; render();
-    var list = files.slice(), typed = $("cl-title").value.trim(), done = 0, failed = 0, tooBig = 0, base = Date.now();
-    list.reduce(function (p, f, i) {
-      return p.then(function () {
-        if (f.size > MAX) { tooBig++; return; }
-        say("Video upload hudai chha (" + (i + 1) + "/" + list.length + ")");
-        var title = (list.length === 1 && typed) ? typed : "";
-        return up(f).then(function (r) {
-          return col.add({ asset: r.id, title: title, at: base + i, by: window.hkMe || "" });
-        }).then(function () { done++; }).catch(function (e) { failed++; say("Upload bhayena (" + ((e && e.code) || "error") + ")", true); });
-      });
-    }, Promise.resolve()).then(function () {
-      files = []; $("cl-picked").textContent = ""; $("cl-title").value = "";
-      if (failed || tooBig) say(done + " ota save bhayo" + (failed ? ", " + failed + " ota bhayena" : "") + (tooBig ? ", " + tooBig + " ota 20 MB bhanda thulo" : "") + ".", true);
-      else say(done + " ota video save bhayo.");
-    }).then(function () { busy = false; render(); });
-  });
-
-  async function start() {
-    if (started) return;
-    started = true;
-    try {
-      var c = window.claude && window.claude.use ? window.claude : null;
-      var db = c ? await c.use("db") : null;
-      assets = c ? await c.use("assets") : null;
-      if (!db) { loaded = true; say("Save garna login hunuparchha. Supabase setup pura bhayo ki herna.", true); render(); return; }
-      col = db.collection("clips");
-      col.orderBy("at", "desc").onSnapshot(ingest, function (e) {
-        loaded = true; say("Video load bhayena. (" + ((e && e.code) || "error") + ")", true); render();
-      });
-      render();
-    } catch (e) { loaded = true; say("Page ma problem aayo. Feri kholnus.", true); render(); }
-  }
-
-  render();
-  if (window.hkMe) start();
-  document.addEventListener("hk-login", start);
-})();
-</script>
 
 <script>
 (function () {
@@ -2382,223 +2190,7 @@ body::before {
 })();
 </script>
 
-<script>
-(function () {
-  var $ = function (id) { return document.getElementById(id); };
-  var db = null, started = false, settings = null, settingsId = "", filled = false;
-  var notes = [], photos = [], places = [];
-  var map = null, mapReady = false, markers = {}, pending = null, fitted = false;
 
-  function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
-  function say(msg, isErr) { var s = $("dn-status"); s.textContent = msg || ""; s.className = "status" + (isErr ? " err" : ""); }
-  function pad2(n) { return n < 10 ? "0" + n : String(n); }
-  function todayNP() { return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kathmandu" }); }
-  function utc(s) { var p = s.split("-"); return Date.UTC(+p[0], +p[1] - 1, +p[2]); }
-  function daysBetween(a, b) { return Math.round((utc(b) - utc(a)) / 86400000); }
-  function dayNum() { return Math.floor(utc(todayNP()) / 86400000); }
-  function fmtDate(ds) { return new Date(utc(ds)).toLocaleDateString("en-US", { timeZone: "UTC", day: "numeric", month: "short", year: "numeric" }); }
-  function nextOccur(ds, today) {
-    var p = ds.split("-"), y = +today.slice(0, 4), m = +p[1], d = +p[2];
-    function mk(yy) { var dd = d; if (m === 2 && d === 29 && !((yy % 4 === 0 && yy % 100 !== 0) || yy % 400 === 0)) dd = 28; return yy + "-" + pad2(m) + "-" + pad2(dd); }
-    var c = mk(y);
-    return c < today ? mk(y + 1) : c;
-  }
-  function ymd(a, b) {
-    var ay = +a.slice(0, 4), am = +a.slice(5, 7), ad = +a.slice(8, 10), by = +b.slice(0, 4), bm = +b.slice(5, 7), bd = +b.slice(8, 10);
-    var y = by - ay, m = bm - am, d = bd - ad;
-    if (d < 0) { m--; d += new Date(Date.UTC(by, bm - 1, 0)).getUTCDate(); }
-    if (m < 0) { y--; m += 12; }
-    return { y: y, m: m, d: d };
-  }
-  function nameOf(by) { return by === "Aaru" ? "Butki" : by === "Jash" ? "Jash" : ""; }
-
-  function renderTop() {
-    var t = todayNP();
-    if (settings && settings.start && settings.start <= t) {
-      $("dn-days").textContent = daysBetween(settings.start, t) + " din";
-      var r = ymd(settings.start, t);
-      $("dn-ymd").textContent = r.y + " barsa, " + r.m + " mahina, " + r.d + " din";
-    } else {
-      $("dn-days").textContent = "\u2014";
-      $("dn-ymd").textContent = "Tala \u201CMitti haru set garnus\u201D ma suru bhayeko mitti halnus.";
-    }
-    var items = [];
-    function add(label, ds, withYears) {
-      if (!ds) return;
-      var nx = nextOccur(ds, t), yrs = +nx.slice(0, 4) - +ds.slice(0, 4);
-      items.push({ label: label + (withYears && yrs > 0 ? " (" + yrs + ")" : ""), date: nx, days: daysBetween(t, nx) });
-    }
-    if (settings) {
-      add("Anniversary", settings.anniv || settings.start, true);
-      add("Butki ko birthday", settings.bA, true);
-      add("Jash ko birthday", settings.bJ, true);
-    }
-    items.sort(function (a, b) { return a.days - b.days; });
-    var ul = $("dn-list");
-    ul.textContent = "";
-    if (!items.length) { ul.appendChild(el("li", "muted", "Mitti set garepachhi countdown yaha dekhinchha.")); return; }
-    items.forEach(function (it) {
-      var li = el("li");
-      var left = el("div");
-      left.appendChild(el("div", null, it.label));
-      left.appendChild(el("div", "muted", fmtDate(it.date)));
-      li.appendChild(left);
-      li.appendChild(el("span", "n", it.days === 0 ? "Aaja! \uD83C\uDF89" : it.days + " din"));
-      ul.appendChild(li);
-    });
-  }
-
-  function renderMem() {
-    var box = $("dn-mem");
-    box.textContent = "";
-    if (!photos.length) { box.appendChild(el("p", "muted", "Album ma photo halepachhi aajako yaad yaha aaunchha.")); return; }
-    var p = photos[dayNum() % photos.length];
-    var img = document.createElement("img");
-    img.className = "memimg"; img.alt = p.caption || "Aajako yaad"; img.src = window.hkBlobBase + p.asset;
-    box.appendChild(img);
-    if (p.caption) box.appendChild(el("p", null, p.caption));
-    box.appendChild(el("p", "muted", new Date(p.at).toLocaleDateString("en-US", { timeZone: "Asia/Kathmandu", day: "numeric", month: "short", year: "numeric" })));
-  }
-
-  function renderNotes() {
-    $("dn-nCount").textContent = String(notes.length);
-    var n = $("dn-note");
-    if (!notes.length) n.textContent = "Tala pahilo love note lekhnus.";
-    else { var x = notes[dayNum() % notes.length]; n.textContent = "\u201C" + x.text + "\u201D" + (nameOf(x.by) ? " \u2014 " + nameOf(x.by) : ""); }
-    var ul = $("dn-notes");
-    ul.textContent = "";
-    notes.slice().reverse().forEach(function (x) {
-      var li = el("li");
-      li.appendChild(el("span", null, x.text + (nameOf(x.by) ? " \u2014 " + nameOf(x.by) : "")));
-      var del = el("button", "btn quiet danger", "Delete");
-      del.type = "button";
-      del.addEventListener("click", function () {
-        window.hkConfirmPin("Note delete garna PIN halnus").then(function (ok) {
-          if (ok) db.collection("notes").doc(x.id).delete().catch(function () { say("Delete bhayena.", true); });
-        });
-      });
-      li.appendChild(del);
-      ul.appendChild(li);
-    });
-  }
-
-  // ---- Map ----
-  function initMap() {
-    if (mapReady) { if (map) map.invalidateSize(); return; }
-    if (!window.L) { say("Map load bhayena. Internet herera feri kholnus.", true); return; }
-    mapReady = true;
-    map = L.map("dn-map").setView([27.7172, 85.324], 12);
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "&copy; OpenStreetMap" }).addTo(map);
-    map.on("click", function (e) { setPending(e.latlng); });
-    drawMarkers();
-  }
-  function setPending(ll) {
-    if (!map) return;
-    if (pending) pending.setLatLng(ll); else pending = L.marker(ll, { draggable: true, opacity: 0.75 }).addTo(map);
-    $("dn-pickInfo").textContent = "Thau chhaniyo. Naam lekhera \u201CThau thapnus\u201D thichnus.";
-  }
-  function drawMarkers() {
-    if (!map) return;
-    Object.keys(markers).forEach(function (k) { map.removeLayer(markers[k]); });
-    markers = {};
-    places.forEach(function (p) {
-      var m = L.marker([p.lat, p.lng]).addTo(map);
-      var d = document.createElement("div"); d.textContent = p.name; m.bindPopup(d);
-      markers[p.id] = m;
-    });
-    if (places.length && !fitted) { fitted = true; map.fitBounds(L.latLngBounds(places.map(function (p) { return [p.lat, p.lng]; })), { padding: [30, 30], maxZoom: 15 }); }
-  }
-  function renderPlaces() {
-    var ul = $("dn-places");
-    ul.textContent = "";
-    places.slice().reverse().forEach(function (p) {
-      var li = el("li");
-      var b = el("button", "btn quiet", p.name);
-      b.type = "button";
-      b.addEventListener("click", function () { if (map && markers[p.id]) { map.setView([p.lat, p.lng], 15); markers[p.id].openPopup(); $("dn-map").scrollIntoView({ block: "center", behavior: "smooth" }); } });
-      li.appendChild(b);
-      var del = el("button", "btn quiet danger", "Delete");
-      del.type = "button";
-      del.addEventListener("click", function () {
-        window.hkConfirmPin("Thau delete garna PIN halnus").then(function (ok) {
-          if (ok) db.collection("places").doc(p.id).delete().catch(function () { say("Delete bhayena.", true); });
-        });
-      });
-      li.appendChild(del);
-      ul.appendChild(li);
-    });
-    drawMarkers();
-  }
-
-  // ---- Buttons ----
-  $("dn-save").addEventListener("click", function () {
-    if (!db) return;
-    var v = { start: $("dn-start").value, anniv: $("dn-anniv").value, bA: $("dn-bA").value, bJ: $("dn-bJ").value, at: Date.now() };
-    var col = db.collection("settings");
-    (settingsId ? col.doc(settingsId).update(v) : col.add(v)).then(function () { say("Mitti save bhayo."); }).catch(function (e) { say("Save bhayena (" + ((e && e.code) || "error") + ")", true); });
-  });
-  $("dn-noteAdd").addEventListener("click", function () {
-    var t = $("dn-noteIn").value.trim();
-    if (!db || !t) return;
-    db.collection("notes").add({ text: t, by: window.hkMe || "", at: Date.now() }).then(function () { $("dn-noteIn").value = ""; say("Note save bhayo."); }).catch(function (e) { say("Save bhayena (" + ((e && e.code) || "error") + ")", true); });
-  });
-  $("dn-here").addEventListener("click", function () {
-    if (!navigator.geolocation) { say("Yo browser ma location chalena.", true); return; }
-    initMap();
-    navigator.geolocation.getCurrentPosition(function (pos) {
-      var ll = L.latLng(pos.coords.latitude, pos.coords.longitude);
-      setPending(ll); map.setView(ll, 15);
-    }, function () { say("Location permission diyenau ya paaena.", true); });
-  });
-  $("dn-placeAdd").addEventListener("click", function () {
-    var name = $("dn-placeName").value.trim();
-    if (!db) return;
-    if (!pending) { say("Pahila map ma thau chhannus.", true); return; }
-    if (!name) { say("Thau ko naam lekhnus.", true); return; }
-    var ll = pending.getLatLng();
-    db.collection("places").add({ name: name, lat: ll.lat, lng: ll.lng, by: window.hkMe || "", at: Date.now() }).then(function () {
-      $("dn-placeName").value = ""; if (pending) { map.removeLayer(pending); pending = null; }
-      $("dn-pickInfo").textContent = "Thau save bhayo."; say("");
-    }).catch(function (e) { say("Save bhayena (" + ((e && e.code) || "error") + ")", true); });
-  });
-  $("t-din").addEventListener("click", function () { renderTop(); setTimeout(initMap, 60); });
-
-  function fill() {
-    if (filled || !settings) return;
-    filled = true;
-    $("dn-start").value = settings.start || ""; $("dn-anniv").value = settings.anniv || ""; $("dn-bA").value = settings.bA || ""; $("dn-bJ").value = settings.bJ || "";
-  }
-  async function start() {
-    if (started) return;
-    started = true;
-    try {
-      var c = window.claude && window.claude.use ? window.claude : null;
-      db = c ? await c.use("db") : null;
-      if (!db) { say("Login hunuparchha. Supabase setup pura bhayo ki herna.", true); return; }
-      var err = function (e) { say("Load bhayena (" + ((e && e.code) || "error") + ")", true); };
-      db.collection("settings").orderBy("at", "desc").onSnapshot(function (s) {
-        var d = s.docs[0]; settings = d ? d.data() : null; settingsId = d ? d.id : ""; fill(); renderTop();
-      }, err);
-      db.collection("notes").orderBy("at", "asc").onSnapshot(function (s) {
-        notes = s.docs.map(function (d) { var x = d.data() || {}; return { id: d.id, text: String(x.text || ""), by: String(x.by || ""), at: Number(x.at) || 0 }; }).filter(function (x) { return x.text; });
-        renderNotes();
-      }, err);
-      db.collection("album").orderBy("at", "asc").onSnapshot(function (s) {
-        photos = s.docs.map(function (d) { var x = d.data() || {}; return { id: d.id, asset: String(x.asset || ""), caption: String(x.caption || ""), at: Number(x.at) || 0 }; }).filter(function (x) { return x.asset; });
-        renderMem();
-      }, err);
-      db.collection("places").orderBy("at", "asc").onSnapshot(function (s) {
-        places = s.docs.map(function (d) { var x = d.data() || {}; return { id: d.id, name: String(x.name || "Thau"), lat: Number(x.lat), lng: Number(x.lng), at: Number(x.at) || 0 }; }).filter(function (x) { return isFinite(x.lat) && isFinite(x.lng); });
-        renderPlaces();
-      }, err);
-      setInterval(renderTop, 60000);
-    } catch (e) { say("Page ma problem aayo. Feri kholnus.", true); }
-  }
-  renderTop(); renderMem(); renderNotes();
-  if (window.hkMe) start();
-  document.addEventListener("hk-login", start);
-})();
-</script>
 
 <script>
 (function () {
